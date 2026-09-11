@@ -84,13 +84,13 @@ export function TrailerPreview({ length, width, height, units }: Props) {
         y2={originY - h - depth * 0.5}
         stroke={strokeSoft}
       />
-      <text x={originX + l / 2} y={originY + 22} fill={label} fontSize="12" textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif">
+      <text x={originX + l / 2} y={originY + 22} fill={label} fontSize="12" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif">
         L {dimLabel(length, unit)}
       </text>
-      <text x={originX + l + depth + 18} y={originY - h / 2} fill={label} fontSize="12" fontFamily="DM Sans, system-ui, sans-serif">
+      <text x={originX + l + depth + 18} y={originY - h / 2} fill={label} fontSize="12" fontFamily="Inter, system-ui, sans-serif">
         H {dimLabel(height, unit)}
       </text>
-      <text x={originX + l + depth / 2 + 8} y={originY - depth * 0.5 + 18} fill={label} fontSize="12" fontFamily="DM Sans, system-ui, sans-serif">
+      <text x={originX + l + depth / 2 + 8} y={originY - depth * 0.5 + 18} fill={label} fontSize="12" fontFamily="Inter, system-ui, sans-serif">
         W {dimLabel(width, unit)}
       </text>
     </svg>
