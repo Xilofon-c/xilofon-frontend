@@ -3,7 +3,7 @@ import { Navbar } from './components/navbar/Navbar'
 import { AccountPage } from './pages/AccountPage'
 import { CreateShipmentPage } from './pages/CreateShipmentPage'
 import { HomePage } from './pages/HomePage'
-import { LoginPage } from './components/LoginPage';
+import { LoginPage } from './components/loginpage/LoginPage';
 import { ReportPage } from './pages/ReportPage'
 import { ShipmentsPage } from './pages/ShipmentsPage'
 
