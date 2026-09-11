@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { formatFileSize } from '../lib/format'
+import { formatFileSize } from '../../lib/format'
 import './BolUpload.css'
 
 const ACCEPT =

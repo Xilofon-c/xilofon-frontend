@@ -1,8 +1,8 @@
-import { Header } from '../components/Header'
-import { Hero } from '../components/Hero'
-import { TrailerDimensionsSection } from '../components/TrailerDimensions'
+import { Header } from '../components/page1-main/Header'
+import { Hero } from '../components/page1-main/Hero'
+import { TrailerDimensionsSection } from '../components/page1-main/TrailerDimensions'
 
-import { Footer } from '../components/Footer'
+import { Footer } from '../components/page1-main/Footer'
 
 export function HomePage() {
   return (
