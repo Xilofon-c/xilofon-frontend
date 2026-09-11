@@ -47,6 +47,17 @@
   min-height: 40px;
 
 }
+.login-icon{
+  width:40px;
+  height:40px;
+   display: flex;
+  align-items: center;
+  cursor:pointer;
+}
+ .login-button{
+  background-color: var(--bg);
+  border:none;
+ }
 
 @media (max-width: 720px) {
   .nav {

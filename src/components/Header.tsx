@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import './Header.css';
-
+import { useNavigate } from 'react-router-dom';
 export function Header() {
+  const navigate = useNavigate();
   return (
     <motion.header
       className="site-header"
@@ -15,13 +16,15 @@ export function Header() {
           
         </a>
         <nav className="nav" aria-label="Primary">
-          <a href="#dimensions">Vehicle specs</a>
-          <a href="#bol">Bill of lading</a>
+          <a href="#dimensions">Get started</a>
+          <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </nav>
-        <a className="btn btn-primary header-cta" href="#dimensions">
-          Get started
-        </a>
+        <button type="button"  className='login-button'
+        onClick={()=>navigate('/login')}
+        aria-label="Open login page">
+          <img src="./login.png" alt="login icon" className='login-icon'></img>
+        </button>
       </div>
     </motion.header>
   )
