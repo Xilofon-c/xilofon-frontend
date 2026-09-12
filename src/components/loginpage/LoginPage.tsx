@@ -1,86 +1,209 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './LoginPage.css'; 
-import {Lock} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import './LoginPage.css';
+import {motion} from 'framer-motion';
 
 type UserRole = 'office' | 'loader';
+
 export function LoginPage() {
   const navigate = useNavigate();
 
-  // State management for form inputs
-  const [role, setRole]=useState<UserRole>('office');
+  const [activeTab, setActiveTab] = useState('SignUp');
+  const handleTabSwitch = (mode: string) => {
+    setActiveTab(mode);
+    setError(null); 
+    setEmail('');
+  setPassword('');
+  setUsername('');
+  
+  };
+
+  const [role, setRole] = useState<UserRole>('office');
+  const handleRole = (mode: UserRole) => {
+    setRole(mode);
+  };
+  const[username, setUsername]=useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  // UI state for async actions & feedback
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const isValidEmail = (email: string): boolean => {
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-
-    // Basic validation
-    if (!email || !password ) {
+     
+    if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
+    if (!isValidEmail(email)) {
+    setError('Invalid email format. Must contain "@" and a valid domain (e.g., name@domain.com).');
+    return;
+  }
+  if(password.length<6){
+    setError('Password must contain more than 6 characters.');
+    return;
+  }
 
     setIsLoading(true);
 
-    try {
-      // Simulate API call for authentication
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  
 
-      // Example test condition (Replace with actual backend integration)
-      if (email === 'user@example.com' && password === 'password123' && role==='office') {
-        console.log('Logging in as:', role, email);
-        // Redirect user back to the home page or dashboard
-        navigate('/');
-      } else {
-        setError('Invalid email or password. Try user@example.com / password123');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ try {
+ 
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  localStorage.setItem('authToken', 'mock-test-jwt-token');
+
+  console.log(`${activeTab} successful!`);
+  navigate('/'); 
+} catch (err: any) {
+  setError('Something went wrong.');
+} finally {
+  setIsLoading(false);
+}
+  }
 
   return (
     <div className="outerworld">
-      <div className='both'>
-        <div className="image-wrapper">
-        <img className="loginphoto" src="https://images.pexels.com/photos/7233359/pexels-photo-7233359.jpeg" alt="Login background">
-        </img>
-        <div className='choice-container'>
-         <button type="button" className="choice active">SignUp</button>
-         <button type="button" className="choice ">Login</button>
-         </div>
-         </div>
-   <div className='container'>
-    <div className='header'>
-      <div className='text'>SignUp</div>
-         <div className='underline'></div>
-    </div>
-  
-
-    <div className='inputs'>
-      
-     <div className='input'>
-        <input type="email"  placeholder="Email"/>
-      </div>
-
-       <div className='input'>
-        <input type="password"  placeholder="Password"/>
-      </div>
+      <motion.div
+        className="both"
+        initial={{ opacity: 0, y: 30, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -20, scale: 0.96 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}>
      
-    </div>
-    <div className="forgot-password">Forgot Password?</div>
-     <button type="button" className='startbutton'>Get started</button>
-    </div>
-    </div>
+      
+        <div className="image-wrapper">
+          <img
+            className="loginphoto"
+            src="https://images.pexels.com/photos/7233359/pexels-photo-7233359.jpeg"
+            alt="Login background"
+          />
+          <div className="choice-container">
+            <button
+              type="button"
+              className={activeTab === 'SignUp' ? 'choice-active' : 'choice'}
+              onClick={() => handleTabSwitch('SignUp')}
+            >
+              SignUp
+            </button>
+            <button
+              type="button"
+              className={activeTab === 'Login' ? 'choice-active' : 'choice'}
+              onClick={() => handleTabSwitch('Login')}
+            >
+              Login
+            </button>
+          </div>
+        </div>
+
+      
+        <form className="container" onSubmit={handleSubmit}>
+          <div className="header">
+            <div className="text">{activeTab}</div>
+            <div className="underline"></div>
+          </div>
+
+          <div className="status">
+            <button
+              type="button"
+              className={role === 'office' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('office')}
+            >
+              Office
+            </button>
+            <p>|</p>
+            <button
+              type="button"
+              className={role === 'loader' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('loader')}
+            >
+              Loader
+            </button>
+          </div>
+         
+          <div className="inputs">
+             {activeTab==='Login' ? (<div></div>): (<div className="input">
+              <input type="text"
+              placeholder="Username"
+               value={username}
+               onChange={(e)=>setUsername(e.target.value)}
+              />
+             </div>)}
+            <div className="input">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="input" style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="show-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '15px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  color: 'var(--accent)'
+                }}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="error-message" style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
+          {activeTab === 'SignUp' ? (
+            <label className="check-box">
+              <input type="checkbox" required />
+              <span>I agree to the <a href="/terms">Terms & Conditions</a></span>
+            </label>
+          ) : (
+            <div className="forgot-password">Forgot Password?</div>
+          )}
+
+          <button
+            type="submit"
+            className="startbutton"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}
+          </button>
+
+          <a className="back" onClick={() => navigate('/')}>
+            ← Get back to home
+          </a>
+        </form>
+       </motion.div>
     </div>
   );
 }

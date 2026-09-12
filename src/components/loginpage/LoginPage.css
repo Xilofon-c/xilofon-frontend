@@ -16,6 +16,7 @@
     height:600px;
     gap:1em;
     margin:3em auto;
+    z-index:3;
 }
 
 .loginphoto{
@@ -35,8 +36,8 @@
  display:flex;
  position:absolute;
  top: 30%;
-  right: -10%;
- backdrop-filter: blur(4px);
+  right: -16%;
+ z-index:2;
  border:none;
  transform: translate(-40%, -40%);
  margin-top:10px;
@@ -45,11 +46,28 @@
  align-items: center;
 
 }
-.choice{
-  font-size: 20px;;
- border-radius:30px;
- width:150px;
- border:none;
+.choice, 
+.choice-active {
+  width: 120px;
+  height: 60px;
+  border: none;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.choice {
+  background-color: transparent;
+  color: white; 
+  z-index: 1;
+}
+
+.choice-active {
+  background-color: var(--bg-muted);
+  color: var(--accent);
+  z-index: 3; 
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
 }
 .both{
   display:grid;
@@ -78,12 +96,42 @@
   height:3px;
    border-radius:30px;
 }
-
+.status{
+  display:flex;
+  flex-direction: row;
+    gap:0;
+    align-items:center;
+    justify-content:center;
+    margin-top:20px;
+    margin-left:20px;
+    
+}
+.status p{
+  font-size:22px;
+  padding-left:10px;
+  padding-right:10px;
+  
+}
+.active-status,
+.nonactive{
+  border-radius:20px;
+  width:80px;
+  height:40px;
+  font-size:17px;
+  border:none;
+}
+.nonactive{
+  background-color: transparent;
+}
+.active-status{
+  background-color: var(--accent);
+  color:white;
+}
 .inputs{
   display:flex;
   flex-direction: column;
   gap:15px;
-  margin-top:20px;
+ 
   align-items:center;
 }
 .input input{
@@ -93,6 +141,16 @@
   padding:10px;
   width:350px;
 }
+.check-box{
+  display:flex;
+
+  align-items: left;
+  margin-left:27px;
+  margin-top:10px;
+  cursor:pointer;
+}
+input[type="checkbox"] {
+  accent-color: var(--accent);}
 .forgot-password{
   display:flex;
   flex-direction: column;
@@ -112,7 +170,17 @@
   border-radius: 4px;
   color:white;
   width:345px;
-  margin-left:20px;
+  margin-left:24px;
+}
+
+.back{
+  text-align:center;
+  margin-top:5px;
+  font-size:16px;
+  cursor:pointer;
+}
+.back:hover{
+  color:var(--accent);
 }
 .startbutton:hover{
   background-color: var(--accent-hover);
