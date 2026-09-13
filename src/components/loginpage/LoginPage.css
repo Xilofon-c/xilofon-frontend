@@ -185,3 +185,14 @@ input[type="checkbox"] {
 .startbutton:hover{
   background-color: var(--accent-hover);
 }
+.show-password-toggle{
+   background-color: transparent;
+   border:none;
+   cursor:pointer;
+   position:absolute;
+   right:25px;
+   top:10px;
+   color: var(--accent)
+   
+   
+}

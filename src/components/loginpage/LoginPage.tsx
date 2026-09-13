@@ -4,17 +4,19 @@ import './LoginPage.css';
 import {motion} from 'framer-motion';
 
 type UserRole = 'office' | 'loader';
+type AuthTab= 'SignUp' | 'Login';
 
 export function LoginPage() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('SignUp');
-  const handleTabSwitch = (mode: string) => {
+  const [activeTab, setActiveTab] = useState<AuthTab>('SignUp');
+  const handleTabSwitch = (mode: AuthTab) => {
     setActiveTab(mode);
     setError(null); 
     setEmail('');
   setPassword('');
   setUsername('');
+  setCheckPassword('');
   
   };
 
@@ -25,22 +27,21 @@ export function LoginPage() {
   const[username, setUsername]=useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [checkpassword, setCheckPassword]=useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
-
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const isValidEmail = (email: string): boolean => {
+  const isValidEmail = (emailStr: string): boolean => {
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  return emailRegex.test(emailStr);
 };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
      
-    if (!email || !password) {
+    if (!email || !password || (activeTab==="SignUp" && !username)) {
       setError('Please fill in all fields.');
       return;
     }
@@ -51,6 +52,10 @@ export function LoginPage() {
   if(password.length<6){
     setError('Password must contain more than 6 characters.');
     return;
+  }
+  if(password !== checkpassword && activeTab==="SignUp"){
+    setError('The passwords do not match.');
+      return;
   }
 
     setIsLoading(true);
@@ -63,7 +68,7 @@ export function LoginPage() {
 
   localStorage.setItem('authToken', 'mock-test-jwt-token');
 
-  console.log(`${activeTab} successful!`);
+  console.log(`${activeTab} successful! as ${role}`);
   navigate('/'); 
 } catch (err: any) {
   setError('Something went wrong.');
@@ -132,7 +137,7 @@ export function LoginPage() {
           </div>
          
           <div className="inputs">
-             {activeTab==='Login' ? (<div></div>): (<div className="input">
+             {activeTab==='SignUp' && (<div className="input">
               <input type="text"
               placeholder="Username"
                value={username}
@@ -159,21 +164,27 @@ export function LoginPage() {
                 type="button"
                 className="show-password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '15px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  color: 'var(--accent)'
-                }}
+                
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
+            {activeTab==='SignUp' &&
+            (<div className="input" style={{ position: 'relative' }}>
+              <input value={checkpassword}
+              placeholder="Verify password"
+              type={showPassword ? 'text':'password' }
+              onChange={(e)=>setCheckPassword(e.target.value)}/>
+               <button
+                type="button"
+                className="show-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            
+            </div>)}
           </div>
 
           {error && (
