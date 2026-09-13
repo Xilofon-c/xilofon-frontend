@@ -11,7 +11,7 @@ function AppShell() {
     <>
       <a className="skip-link" href="#main">
         Skip to content
-      </a>
+      </a>   
       <Navbar />
       <Outlet />
     </>
