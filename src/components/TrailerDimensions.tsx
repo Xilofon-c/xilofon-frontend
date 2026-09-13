@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { FieldErrors, TrailerDimensions, TrailerField, UnitSystem } from '../types'
 import { cubicVolume, limitsFor, parseDimension } from '../lib/format'
@@ -211,7 +212,9 @@ export function TrailerDimensionsSection() {
            
         <BolUpload />
         <div className='buttonfinal'>
-        <a href="#finalpage" className="btn btn-primary final" >Get result</a>
+        <Link to="/shipments/new" className="btn btn-primary final">
+          Get result
+        </Link>
         </div>
       </div>
     </motion.section>

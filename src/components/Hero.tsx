@@ -53,7 +53,6 @@ export function Hero() {
             Arrange cargo to fit <i style={{color:' var(--accent)',
               fontSize: 55,
               letterSpacing:'0em',
-              fontFamily: "Edu VIC WA NT Hand",
               marginLeft:'5px'
             }}>your</i> vehicle.
           </motion.h1>
