@@ -6,8 +6,9 @@ export function HomePage() {
   return (
     <div className="page">
       <main id="main">
-        <Hero />
+        
         <TrailerDimensionsSection />
+        <Hero />
       </main>
       <Footer />
     </div>

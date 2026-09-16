@@ -1,126 +1,27 @@
-.hero {
-  position: relative;
-  z-index: 1;
-  padding: 60px 0 20px;
-  min-height: 40vh;
-  background:
-    linear-gradient(180deg, #f6f7f9 0%, #ffffff 100%);
-
-}
-
-.hero-grid {
-   z-index:1;
-     position: relative;
-  gap: 56px;
-  align-items: center;
-}
-.background{
-  position:absolute;
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  opacity: 1;
-    inset: 0;
-  z-index: 0;
-}
-
-
-.hero h1 {
-  margin: 0 0 16px;
-  font-size: clamp(2.1rem, 4.4vw, 3.35rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.08;
-}
-
-.hero-lead {
-  margin: 0 0 28px;
-  max-width: 48ch;
-  color: var(--muted);
-  font-size: 1.05rem;
-}
-
-
-
-.steps {
-  display: flex;
-  flex-direction: row;
-  gap: 14px;
-  width:700px;
- padding-top:2em;
+.hero{
+  background-color: var(--bg-muted);
+  padding: 20px 100px;
  
 }
+.dreptunghi{
+  background-color:var(--accent);
+  width:100%;
+  height:300px;
+  border-radius: 30px;
+  overflow:hidden;
+  background-image: url('https://cdn-icons-png.flaticon.com/512/712/712058.png');
+  background-repeat:no-repeat ;
+  background-position: center;
+  background-position-y: 20%;
+  background-size: 400px 400px;
 
-.step {
-  display: grid;
-  grid-template-columns: 36px 1fr;
-  gap: 20px;
-  align-items: start;
-  padding: 20px ;
-  min-height:400px;
-  min-width:350px;
-  border: 1px solid var(--line);
- border-top-left-radius: 50px;
-  border-top-right-radius: 50px;
-  background: var(--bg-muted);
-  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+ 
 }
-
-.step:hover {
-  border-color: var(--accent);
-  background: #f2e8f4;
-}
-
-.step-num {
-  text-align: start;
-  width: 36px;
-  height: 36px;
-  font-size: 40px;
-  margin-top:3px;
- font-style: italic;
-  color: var(--accent);
-  font-weight: 700;
-  z-index: 0;
-
-}
-
-.step h3 {
-  margin: 5px 0 2px;
-  font-size: 25px;
-  font-weight: 600;
-}
-
-.step p
- {
-  margin: 0;
-  color: var(--muted);
-  font-size: 16px;
-}
-.ppp{
-  display:flex;
-  flex-direction: column;
-  gap:1em;
-  z-index: 1;
-  max-width: 260px;
-  margin-top:0.5em;
-
-}
-.ppp symbol{
-  color:var(--accent);
-  font-size:24px;
-  font-weight: 600;
-}
-@media (max-width: 900px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-
-@media (max-width: 560px) {
-  
-
-  .hero {
-    padding-top: 40px;
-  }
+.dreptunghi h2{
+ font-size:40px;
+ font-style:oblique;
+ font-weight:500;
+ color:white;
+ padding:40px 40px;
+ width:380px;
 }

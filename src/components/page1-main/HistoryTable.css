@@ -1,0 +1,63 @@
+.table-container {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-container input {
+  margin-top: 20px;
+  background-color: white;
+  width: 300px;
+  color: var(--accent);
+  padding: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 30px;
+}
+
+.shipment-table {
+  margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse; 
+  text-align: left;
+}
+
+.shipment-table th,
+.shipment-table td {
+  padding: 12px 5px;
+  vertical-align: middle; 
+}
+
+.shipment-table th {
+  font-weight: bold;
+}
+
+.action-btn {
+  background-color: var(--accent);
+  border-radius: 30px;
+  width: 80px;
+  padding: 3px 0px;
+  cursor: pointer;
+  color: white;
+}
+
+.action-btn:hover {
+  background-color: var(--accent-hover);
+}
+
+
+
+.badge {
+  
+color:black;   
+}
+
+.badge-completed {
+ color: rgb(9, 201, 9);
+}
+.badge-loading{
+    color:orange;
+}
+.badge-draft{
+    color:red;
+}

@@ -134,7 +134,7 @@
  
   align-items:center;
 }
-.input input{
+.inputs input{
   border-radius:30px;
   border-color:var(--accent);
   text-align: left;

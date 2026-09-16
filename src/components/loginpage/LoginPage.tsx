@@ -15,7 +15,8 @@ export function LoginPage() {
     setError(null); 
     setEmail('');
   setPassword('');
-  setUsername('');
+  setName('');
+    setSurname('');
   setCheckPassword('');
   
   };
@@ -24,7 +25,8 @@ export function LoginPage() {
   const handleRole = (mode: UserRole) => {
     setRole(mode);
   };
-  const[username, setUsername]=useState<string>('');
+  const[name, setName]=useState<string>('');
+  const[surname, setSurname]=useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [checkpassword, setCheckPassword]=useState<string>('');
@@ -41,7 +43,7 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
      
-    if (!email || !password || (activeTab==="SignUp" && !username)) {
+    if (!email || !password || (activeTab==="SignUp" && !name && !surname)) {
       setError('Please fill in all fields.');
       return;
     }
@@ -137,13 +139,20 @@ export function LoginPage() {
           </div>
          
           <div className="inputs">
-             {activeTab==='SignUp' && (<div className="input">
+             {activeTab==='SignUp' && ( <><div className="input">
               <input type="text"
-              placeholder="Username"
-               value={username}
-               onChange={(e)=>setUsername(e.target.value)}
+              placeholder="Name"
+               value={name}
+               onChange={(e)=>setName(e.target.value)}
               />
-             </div>)}
+              </div>
+              <div className="input">
+               <input type="text"
+              placeholder="Surname"
+               value={surname}
+               onChange={(e)=>setSurname(e.target.value)}
+              />
+             </div>  </>)}
             <div className="input">
               <input
                 type="email"
@@ -196,7 +205,7 @@ export function LoginPage() {
           {activeTab === 'SignUp' ? (
             <label className="check-box">
               <input type="checkbox" required />
-              <span>I agree to the <a href="/terms">Terms & Conditions</a></span>
+              <span> I agree to the <a href="/terms">Terms & Conditions</a></span>
             </label>
           ) : (
             <div className="forgot-password">Forgot Password?</div>
