@@ -22,9 +22,9 @@ function AppShell() {
 export default function App() {
   return (
     <Routes>
+       <Route path="/login" element={<LoginPage />} />
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
         <Route path="/shipments" element={<ShipmentsPage />} />
         <Route path="/shipments/new" element={<CreateShipmentPage />} />
         <Route path="/report" element={<ReportPage />} />
