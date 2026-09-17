@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage'
 import { LoginPage } from './components/loginpage/LoginPage';
 import { ReportPage } from './pages/ReportPage'
 import { ShipmentsPage } from './pages/ShipmentsPage'
+import ForgotPassword from './components/loginpage/ForgotPassword';
 
 function AppShell() {
   return (
@@ -21,6 +22,7 @@ function AppShell() {
 
 export default function App() {
   return (
+  
     <Routes>
        <Route path="/login" element={<LoginPage />} />
       <Route element={<AppShell />}>
@@ -29,6 +31,7 @@ export default function App() {
         <Route path="/shipments/new" element={<CreateShipmentPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path='/forgot-password' element={<ForgotPassword />}> </Route>
       </Route>
     </Routes>
   )

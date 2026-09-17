@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import {motion} from 'framer-motion';
+import {Link} from 'react-router-dom';
 
 type UserRole = 'office' | 'loader';
 type AuthTab= 'SignUp' | 'Login';
@@ -27,6 +28,7 @@ export function LoginPage() {
   };
   const[name, setName]=useState<string>('');
   const[surname, setSurname]=useState<string>('');
+  const [username, setUsername]=useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [checkpassword, setCheckPassword]=useState<string>('');
@@ -43,7 +45,7 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
      
-    if (!email || !password || (activeTab==="SignUp" && !name && !surname)) {
+    if (!email || !password || (activeTab==="SignUp" && !name || !surname || !username)) {
       setError('Please fill in all fields.');
       return;
     }
@@ -139,21 +141,31 @@ export function LoginPage() {
           </div>
          
           <div className="inputs">
-             {activeTab==='SignUp' && ( <><div className="input">
+             {activeTab==='SignUp' && ( <div className="input2">
               <input type="text"
               placeholder="Name"
                value={name}
                onChange={(e)=>setName(e.target.value)}
               />
-              </div>
-              <div className="input">
+            
                <input type="text"
               placeholder="Surname"
                value={surname}
                onChange={(e)=>setSurname(e.target.value)}
               />
-             </div>  </>)}
-            <div className="input">
+                </div>
+            )}
+
+             <div className="input3">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+
+            <div className="input3">
               <input
                 type="email"
                 placeholder="Email"
@@ -162,7 +174,7 @@ export function LoginPage() {
               />
             </div>
 
-            <div className="input" style={{ position: 'relative' }}>
+            <div className="input3" style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
@@ -179,7 +191,7 @@ export function LoginPage() {
               </button>
             </div>
             {activeTab==='SignUp' &&
-            (<div className="input" style={{ position: 'relative' }}>
+            (<div className="input3" style={{ position: 'relative' }}>
               <input value={checkpassword}
               placeholder="Verify password"
               type={showPassword ? 'text':'password' }
@@ -208,7 +220,8 @@ export function LoginPage() {
               <span> I agree to the <a href="/terms">Terms & Conditions</a></span>
             </label>
           ) : (
-            <div className="forgot-password">Forgot Password?</div>
+            <div className="forgot-password">
+            <Link to='/forgot-password'>Forgot Password?</Link></div>
           )}
 
           <button
