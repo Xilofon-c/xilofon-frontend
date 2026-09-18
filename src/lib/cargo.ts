@@ -218,7 +218,7 @@ export function packCargo(
     packed.push(makeBox(item, trailer.length + 1.25, 0, parkZ, length, width, height, false))
     parkZ += width + GAP
   }
-
+  console.log(packed)
   return packed
 }
 
