@@ -12,16 +12,9 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
       <div className="h-[3px] bg-[linear-gradient(90deg,#490a67_0%,#81468d_52%,#490a67_100%)]" />
 
       <div className="flex h-16 items-center gap-6 px-5 lg:px-8">
-        <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Xilofon home">
-          <BrandMark className="h-8 w-8 shrink-0 text-accent" />
-          <span className="min-w-0">
-            <span className="block text-[15px] leading-none font-semibold tracking-tight text-ink">
-              Xilofon
-            </span>
-            <span className="mt-1 block text-[11px] leading-none font-medium tracking-[0.04em] text-ink-faint uppercase">
-              Load operations
-            </span>
-          </span>
+        <Link to="/" className="flex w-[200px] items-center ml-10" >
+         <img alt="logo" src="logo.png" className='w-[150px]'></img>
+          
         </Link>
 
         <div className="hidden h-8 w-px bg-line sm:block" aria-hidden="true" />
@@ -49,8 +42,8 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
           <NavLink
             to="/shipments/new"
             className={({ isActive }) =>
-              `inline-flex min-h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-white transition ${
-                isActive ? 'bg-accent-hover' : 'bg-accent hover:bg-accent-hover'
+              `inline-flex min-h-10 items-center rounded-lg px-3 text-[13px] font-semibold !text-white transition ${
+                isActive ? 'bg-accent-hover' : 'bg-accent  hover:bg-accent-hover'
               }`
             }
           >
