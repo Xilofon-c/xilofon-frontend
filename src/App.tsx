@@ -7,6 +7,7 @@ import { LoginPage } from './components/loginpage/LoginPage';
 import { ReportPage } from './pages/ReportPage'
 import { ShipmentsPage } from './pages/ShipmentsPage'
 import ForgotPassword from './components/loginpage/ForgotPassword';
+import GetPIN from './components/loginpage/GetPIN';
 
 function AppShell() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/report" element={<ReportPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path='/forgot-password' element={<ForgotPassword />}> </Route>
+         <Route path='/input-pin' element={<GetPIN />}> </Route>
       </Route>
     </Routes>
   )
