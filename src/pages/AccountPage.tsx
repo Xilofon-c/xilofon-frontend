@@ -2,7 +2,7 @@ import { AppScreen } from './AppScreen'
 
 export function AccountPage() {
   return (
-    <AppScreen kicker="Profile" title="Account">
+    <AppScreen kicker='' title="Account">
       <p className="section-copy">
         Office and loading users manage their profile, role, and yard access here.
       </p>
