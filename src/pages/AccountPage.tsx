@@ -9,7 +9,7 @@ export function AccountPage() {
       <div className="panel" style={{ marginTop: 24, padding: 24 }}>
         <div className="field">
           <label htmlFor="account-name">Name</label>
-          <input id="account-name" className="field-input" defaultValue="Operations user" />
+          <input id="account-name" className="field-input" defaultValue="Operations user" readOnly />
         </div>
         <div className="field" style={{ marginTop: 16 }}>
           <label htmlFor="account-role">Role</label>

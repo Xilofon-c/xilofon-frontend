@@ -1,9 +1,13 @@
 import React,{useRef, useState} from 'react';
-
+import {useNavigate} from 'react-router-dom';
+import axios from 'axios';
 import {motion} from 'framer-motion';
 const GetPIN = () => {
+   const navigate = useNavigate();
            const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const[pin, setPin]=useState<string []>(['','','','']);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading]=useState(false);
     const HandlePinChange=(value:string, index:number)=>{
          const NewPin=[...pin];
          NewPin[index]=value;
@@ -14,9 +18,38 @@ const GetPIN = () => {
          }
     }
 
- 
-    
+    const handleSubmit= async (e:React.FormEvent<HTMLFormElement>)=>{
+      
+      e.preventDefault();
+      setError(null);
 
+      if(!pin.every((digit)=>digit!== '')){
+        setError('PIN is incomplete');
+        return;
+      }
+     
+      try{
+
+        setLoading(true);
+        let response;
+        const pin_={pin:pin.join('')};
+        response=await axios.post('/auth/input-pin' ,pin_);
+        navigate('/');
+
+      }
+      catch(err:any){
+         const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+    setError(serverErrorMessage);
+      }
+      finally{
+        setLoading(false);
+      
+
+    }
+  };
+
+ 
+  
   return (
    <div className="pt-[30px]">
       <motion.div
@@ -37,6 +70,7 @@ const GetPIN = () => {
         <div className=' flex flex-col pt-[130px] '>
           <h1 className='text-3xl font-bold text-accent'>Forgot Password?</h1>
           <p className=' mt-5 text-sm color-muted '>Enter the PIN code sent to your email.</p>
+          <form onSubmit={handleSubmit}>
           <div className='grid grid-cols-5 w-[400px] h-[100px] mt-10'>
              
                 <input type='text'
@@ -84,15 +118,19 @@ const GetPIN = () => {
                 />
                </div>
        
-          <div className="flex ">
+               {error && (
+               <p  className="text-red-500 text-sm pb-5">
+                 {error}
+               </p>
+                )}
 
             <button
-              type="button"
+              type="submit"
               className=" button-pin w-[280px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl"
             >
               Verify PIN
             </button>
-        </div>
+        </form>
        
     </div>
       </motion.div>
