@@ -9,7 +9,7 @@ type UserRole = 'office' | 'loader';
 type AuthTab= 'SignUp' | 'Login';
 
 const api=axios.create({
-    baseURL:'http://localhost:3000/api', //------TO CHANGE BASED ON BACKEND----------
+    baseURL:'http://localhost:8000', 
   });
   export default api;
 

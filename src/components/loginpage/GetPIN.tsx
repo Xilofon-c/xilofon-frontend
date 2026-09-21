@@ -2,6 +2,12 @@ import React,{useRef, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import {motion} from 'framer-motion';
+
+const api=axios.create({
+    baseURL:'http://localhost:8000', 
+    
+  });
+
 const GetPIN = () => {
    const navigate = useNavigate();
            const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -33,7 +39,7 @@ const GetPIN = () => {
         setLoading(true);
         let response;
         const pin_={pin:pin.join('')};
-        response=await axios.post('/auth/input-pin' ,pin_);
+        response=await api.post('/auth/input-pin' ,pin_);
         navigate('/');
 
       }
