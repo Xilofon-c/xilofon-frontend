@@ -8,7 +8,7 @@ import { ReportPage } from './pages/ReportPage'
 import { ShipmentsPage } from './pages/ShipmentsPage'
 import ForgotPassword from './components/loginpage/ForgotPassword';
 import GetPIN from './components/loginpage/GetPIN';
-
+import LogOut from './components/loginpage/LogOut';
 function AppShell() {
   return (
     <>
@@ -34,6 +34,7 @@ export default function App() {
         <Route path="/account" element={<AccountPage />} />
         <Route path='/forgot-password' element={<ForgotPassword />}> </Route>
          <Route path='/input-pin' element={<GetPIN />}> </Route>
+         <Route path='/logout' element={<LogOut />}></Route>
       </Route>
     </Routes>
   )

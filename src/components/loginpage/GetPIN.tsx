@@ -1,12 +1,9 @@
 import React,{useRef, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import {motion} from 'framer-motion';
 
-const api=axios.create({
-    baseURL:'http://localhost:8000', 
-    
-  });
+
 
 const GetPIN = () => {
    const navigate = useNavigate();

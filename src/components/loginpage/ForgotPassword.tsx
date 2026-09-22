@@ -2,14 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
-import axios from 'axios';
 
-
-const api=axios.create({
-    baseURL:'http://localhost:8000', 
-    
-  });
-
+import api from '../../api';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');

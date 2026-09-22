@@ -3,15 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import {motion} from 'framer-motion';
 import {Link} from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 
 type UserRole = 'office' | 'loader';
 type AuthTab= 'SignUp' | 'Login';
 
-const api=axios.create({
-    baseURL:'http://localhost:8000', 
-  });
-  export default api;
+
 
 
 export function LoginPage() {
@@ -88,7 +85,7 @@ export function LoginPage() {
       role,
     };
 
-    response= await axios.post('/auth/signup', signUpData);
+    response= await api.post('/signup', signUpData);
 
   }
   else {
@@ -97,7 +94,7 @@ export function LoginPage() {
       password,
       username,
     };
-    response=await axios.post('/auth/login', loginData);
+    response=await api.post('/login', loginData);
 
   }
   const {token}=response.data;

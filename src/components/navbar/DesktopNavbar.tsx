@@ -1,12 +1,14 @@
 import { Link, NavLink } from 'react-router-dom'
 import { BarcodeIcon, BrandMark } from './NavIcons'
 import { NAV_LINKS } from './navConfig'
-
+import {useNavigate} from 'react-router-dom'
 type DesktopNavbarProps = {
   onOpenScanner: () => void
 }
 
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
+  const navigate=useNavigate();
+  const isLoggedIn=!!localStorage.getItem('authToken');
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas/92 backdrop-blur-xl">
       <div className="h-[3px] bg-[linear-gradient(90deg,#490a67_0%,#81468d_52%,#490a67_100%)]" />
@@ -19,7 +21,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
 
         <div className="hidden h-8 w-px bg-line sm:block" aria-hidden="true" />
 
-        <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap" aria-label="Primary">
+        <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap " aria-label="Primary">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
@@ -58,6 +60,8 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             Scan BOL
           </button>
 
+          {isLoggedIn? (
+
           <Link
             to="/account"
             className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
@@ -67,7 +71,21 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
               OP
             </span>
             <span className="hidden text-[12px] font-semibold text-ink lg:inline">Office</span>
-          </Link>
+          </Link>) :(
+            <button
+                type="button"
+                className="border-none bg-[var(--bg)]"
+                   onClick={() => navigate('/login')}
+              aria-label="Open login page"
+  >
+    <img
+      src="./login.png"
+      alt="login icon"
+      className="flex h-[35px] w-[35px] cursor-pointer items-center"
+        />
+         </button>
+          )
+}
         </div>
       </div>
     </header>
