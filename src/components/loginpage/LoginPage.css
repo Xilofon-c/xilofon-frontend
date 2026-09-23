@@ -208,3 +208,96 @@ input[type="checkbox"] {
    
    
 }
+
+@media (max-width: 600px) {
+
+  .outerworld {
+    padding: 10px;
+  }
+
+  .both {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 180px;
+  }
+
+  .loginphoto {
+    width: 100%;
+    height: 180px;
+    margin: 0;
+    object-fit: cover;
+  }
+
+  .choice-container {
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    margin: 0;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .choice,
+  .choice-active {
+    width: 90px;
+    height: 45px;
+    font-size: 16px;
+  }
+
+  .container {
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 25px 20px;
+    gap: 1em;
+  }
+
+  .text {
+    font-size: 28px;
+  }
+
+  .status {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .input3 {
+    width: 100%;
+  }
+
+  .input3 input {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .input2 {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .input2 input {
+    box-sizing: border-box;
+    width: 50%;
+    min-width: 0;
+  }
+
+  .startbutton {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    padding: 10px;
+  }
+
+  .check-box,
+  .forgot-password {
+    margin-left: 0;
+  }
+}

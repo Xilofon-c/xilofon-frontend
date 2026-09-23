@@ -85,8 +85,9 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
         />
          </button>
           )
+
 }
-        </div>
+</div>
       </div>
     </header>
   )
