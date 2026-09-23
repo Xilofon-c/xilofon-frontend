@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import {motion} from 'framer-motion';
 import {Link} from 'react-router-dom';
+import api from '../../api';
 
 type UserRole = 'office' | 'loader';
 type AuthTab= 'SignUp' | 'Login';
 
+
+
+
 export function LoginPage() {
+
+  
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<AuthTab>('SignUp');
@@ -45,7 +51,7 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
      
-    if (!email || !password || (activeTab==="SignUp" && !name || !surname || !username)) {
+    if (!email || !password || !username || (activeTab === 'SignUp' && (!name || !surname))) {
       setError('Please fill in all fields.');
       return;
     }
@@ -68,18 +74,43 @@ export function LoginPage() {
 
  try {
  
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  let response;
+  if(activeTab==='SignUp'){
+    const signUpData={
+      name,
+      surname,
+      username,
+      email,
+      password,
+      role,
+    };
 
-  localStorage.setItem('authToken', 'mock-test-jwt-token');
+    response= await api.post('/signup', signUpData);
 
-  console.log(`${activeTab} successful! as ${role}`);
-  navigate('/'); 
-} catch (err: any) {
-  setError('Something went wrong.');
-} finally {
-  setIsLoading(false);
-}
   }
+  else {
+    const loginData={
+      email,
+      password,
+      username,
+    };
+    response=await api.post('/login', loginData);
+
+  }
+  const {token}=response.data;
+  localStorage.setItem('authToken',token);
+  console.log(`${activeTab} successful!`);
+  navigate('/'); }
+  catch(err:any){
+    const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+    setError(serverErrorMessage);
+ 
+}
+finally{
+  setIsLoading(false);
+
+}
+  };
 
   return (
     <div className="outerworld">

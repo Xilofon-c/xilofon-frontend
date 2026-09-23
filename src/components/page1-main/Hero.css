@@ -25,3 +25,21 @@
  padding:40px 40px;
  width:380px;
 }
+
+@media (max-width:1024px){
+  .dreptunghi{
+    background-size:300px 300px;
+  }
+}
+@media (max-width:600px){
+  .dreptunghi{
+    background-image:none;
+     
+  }
+  .dreptunghi h2{
+    font-size:30px;
+    width:150px;
+    text-align:center;
+    padding-left:15px;
+  }
+}

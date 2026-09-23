@@ -10,7 +10,7 @@ export function ReportPage() {
   }
 
   return (
-    <AppScreen kicker="Supervisor" title="Report">
+    <AppScreen kicker="" title="Report">
       <p className="section-copy">
         Flag a problem with a shipment — damaged cargo, missing boxes, or a load that does not match
         the plan. The report goes to the supervisor.

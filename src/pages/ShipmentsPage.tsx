@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 export function ShipmentsPage() {
   return (
-    <AppScreen kicker="History" title="Shipments">
+    <AppScreen kicker="" title="Shipments">
       <p className="section-copy">
         Delivery history for completed and in-progress loads. Scan a BOL to attach a new shipment.
       </p>

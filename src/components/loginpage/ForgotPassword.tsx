@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
 
+import api from '../../api';
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +32,18 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      navigate('/input-pin', { state: { email } });
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+      let response;
+      const forgot_password={email,};
+      response= await api.post('/auth/forgot-password', forgot_password);
+     
+      navigate('/input-pin'); }
+      catch(err:any){
+        const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+    setError(serverErrorMessage);
+      }
+      finally{
+  setLoading(false);
+      }
   };
 
   return (

@@ -4,5 +4,5 @@ export const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/shipments', label: 'Shipments' },
   { to: '/report', label: 'Report' },
-  { to: '/account', label: 'Account' },
+ 
 ] as const
