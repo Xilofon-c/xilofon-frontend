@@ -34,9 +34,9 @@ const ForgotPassword = () => {
       setLoading(true);
       let response;
       const forgot_password={email,};
-      response= await api.post('/auth/forgot-password', forgot_password);
+      response= await api.post('/data/forgot-password', forgot_password);
      
-      navigate('/input-pin'); }
+      navigate('/input-pin', { state: { email } }); }
       catch(err:any){
         const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
     setError(serverErrorMessage);
