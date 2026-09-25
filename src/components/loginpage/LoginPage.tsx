@@ -34,7 +34,7 @@ export function LoginPage() {
   };
   const[name, setName]=useState<string>('');
   const[surname, setSurname]=useState<string>('');
-  const [username, setUsername]=useState<string>('');
+
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [checkpassword, setCheckPassword]=useState<string>('');
@@ -51,7 +51,7 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
      
-    if (!email || !password || !username || (activeTab === 'SignUp' && (!name || !surname))) {
+    if (!email || !password  || (activeTab === 'SignUp' && (!name || !surname))) {
       setError('Please fill in all fields.');
       return;
     }
@@ -79,20 +79,19 @@ export function LoginPage() {
     const signUpData={
       name,
       surname,
-      username,
       email,
       password,
       role,
     };
 
-    response= await api.post('/signup', signUpData);
+    response= await api.post('/data/signup', signUpData);
 
   }
   else {
     const loginData={
       email,
       password,
-      username,
+     
     };
     response=await api.post('/login', loginData);
 
@@ -187,14 +186,7 @@ finally{
                 </div>
             )}
 
-             <div className="input3">
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
+          
 
             <div className="input3">
               <input

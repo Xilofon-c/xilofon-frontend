@@ -1,5 +1,5 @@
 import React,{useRef, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useLocation} from 'react-router-dom';
 import api from '../../api';
 import {motion} from 'framer-motion';
 
@@ -7,6 +7,8 @@ import {motion} from 'framer-motion';
 
 const GetPIN = () => {
    const navigate = useNavigate();
+   const location = useLocation();
+   const email = location.state?.email;
            const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const[pin, setPin]=useState<string []>(['','','','']);
     const [error, setError] = useState<string | null>(null);
@@ -35,12 +37,16 @@ const GetPIN = () => {
 
         setLoading(true);
         let response;
-        const pin_={pin:pin.join('')};
-        response=await api.post('/auth/input-pin' ,pin_);
+        const pin_={email, pin:pin.join('')};
+        console.log('email:', email);
+        console.log('pin_ payload:', pin_);
+        
+        response=await api.post('/data/verify-pin' ,pin_);
         navigate('/');
 
       }
       catch(err:any){
+         console.log('error response:', err.response?.data);
          const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
     setError(serverErrorMessage);
       }
