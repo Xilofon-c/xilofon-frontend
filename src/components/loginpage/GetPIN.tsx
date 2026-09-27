@@ -70,8 +70,8 @@ const GetPIN = () => {
       >
         <div>
         <img
-          className="h-[500px] mt-10"
-          src="./forgotpass.png"
+          className="h-[500px] "
+          src="./download5.png"
           alt="forgot-password-image"
         />
         </div>
@@ -136,6 +136,7 @@ const GetPIN = () => {
             <button
               type="submit"
               className=" button-pin w-[280px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl"
+              onClick={()=> navigate('/reset-password')}
             >
               Verify PIN
             </button>

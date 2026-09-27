@@ -249,7 +249,7 @@ finally{
 
           <button
             type="submit"
-            className="startbutton"
+            className="p-2 text-white w-[280px] ml-16 hover:bg-accent-hover bg-accent rounded-sm"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}

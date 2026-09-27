@@ -1,4 +1,6 @@
-
+.bolsection{
+  margin-top:80px;
+}
 
 .dropzone {
   display: grid;
