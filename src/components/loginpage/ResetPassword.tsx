@@ -1,14 +1,49 @@
 import React from 'react';
 import {motion} from 'framer-motion';
 import {useState} from 'react'
+import api from '../../api';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ResetPassword = () => {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const[active, setActive]= useState(false);
+  const navigate = useNavigate();
+    const location = useLocation();
+  const [password, setPassword]=useState('');
+  const [error, setError]=useState<string | null>(null);
+   const email = location.state?.email;
+   const pin_=location.state?.pin_;
+  const [loading, setLoading]=useState(false);
+  const handleResetPassword=async(e:React.FormEvent<HTMLFormElement>)=>{
+    e.preventDefault();
+    setError(null);
+    if( password.length < 5 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)){
+      setError('Please enter a valid password');
+      return;
+    }
+
+
+try{
+setLoading(true);
+  let response;
+  const resetData={email, pin_, password};
+  response= await api.post('/data/reset-password', resetData);
+  navigate('/');
+  
+}
+catch(err:any){
+   console.log('error response:', err.response?.data);
+         const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+               setError(serverErrorMessage);
+  }
+  finally{
+   setLoading(false);
+  }
+};
 
   return (
-    <div className="pt-[30px] flex justify-center items-center ">
+    <div className="pt-[30px] flex justify-center items-center "
+    >
       <motion.div
         className=" bg-white/80 backdrop-blur-md border border-white rounded-2xl shadow-lg ml-20 w-[550px] h-[500px] "
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -18,17 +53,21 @@ const ResetPassword = () => {
       >
         
 
-        <div className=' flex flex-col pt-7 ml-20'>
-          <h1 className=' text-3xl font-bold text-accent'>Reset password</h1>
+        <form className=' flex flex-col pt-7 ml-20'
+        onSubmit={handleResetPassword}>
+          <h1 className=' text-4xl font-bold text-accent'>Reset password</h1>
           <div className='relative  mt-10 w-[280px]'>
-          <input className=' relative  p-4 border text-black text-md w-full border-accent border-sm rounded-sm'
+          <input className=' relative  p-4 border text-black text-xl w-full border-accent border-sm rounded-sm'
           placeholder="Enter new password"
-         type={showPassword ? "text" : "password"}>
+           value={password}
+         type={showPassword ? "text" : "password"}
+         onChange={(e)=>setPassword(e.target.value)}>
           </input>
           <button
                 type="button"
                 className="text-accent mr-10 absolute right-1 top-1/2 -translate-y-1/2 "
                 onClick={() => setShowPassword(!showPassword)}
+               
                 
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -36,20 +75,28 @@ const ResetPassword = () => {
                
           </div>
           <div className='mt-5'>
-        <p className={active ? "text-green-600 text-sm" : "text-gray-400 text-sm"}>
+        <p className={password.length>=5 ? "text-green-600 text-md" : "text-gray-400 text-md"}>
                ✓ At least 5 characters
            </p>
-            <p className={active ? "text-green-600 text-sm" : "text-gray-400 text-sm"}>
+            <p className={/[A-Z]/.test(password) ? "text-green-600 text-md" : "text-gray-400 text-md"}>
                ✓ At least one uppercase letter
            </p>
-            <p className={active ? "text-green-600 text-sm" : "text-gray-400 text-sm"}>
+            <p className={/[0-9]/.test(password) ? "text-green-600 text-md" : "text-gray-400 text-md"}>
                ✓ At least one number
            </p>
-               
+             {error && (
+             <p className="text-red-600 mt-2 text-md">
+                  {error}
+               </p>
+               )}
+            </div>
+            <div className='mt-10 flex gap-6 text-xl '>
+            <button onClick={()=> navigate('/login')} className='p-3 bg-accent  text-white  rounded-xl hover:bg-accent-hover'>Cancel</button>
+            <button type='submit' className='p-3 bg-accent text-white  rounded-xl hover:bg-accent-hover'>Confirm</button>
             </div>
           
        
-    </div>
+    </form>
       </motion.div>
     </div>
   )

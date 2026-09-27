@@ -96,12 +96,18 @@ export function LoginPage() {
     response=await api.post('/login', loginData);
 
   }
-  const {token}=response.data;
+  const {token, role:userRole}=response.data;
   localStorage.setItem('authToken',token);
+  localStorage.setItem('userRole', userRole);
   console.log(`${activeTab} successful!`);
-  navigate('/'); }
+  if (userRole === 'office') {
+  navigate('/');
+} else if (userRole === 'loader') {
+  navigate('/account');
+}
+  }
   catch(err:any){
-    const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+    const serverErrorMessage =  err.response?.data?.detail || err.response?.data?.message || 'Something went wrong. Please try again.';
     setError(serverErrorMessage);
  
 }
@@ -153,6 +159,8 @@ finally{
           </div>
 
           <div className="status">
+            {activeTab==='SignUp' && (
+              <>
             <button
               type="button"
               className={role === 'office' ? 'active-status' : 'nonactive'}
@@ -167,7 +175,8 @@ finally{
               onClick={() => handleRole('loader')}
             >
               Loader
-            </button>
+            </button> 
+            </>)}
           </div>
          
           <div className="inputs">

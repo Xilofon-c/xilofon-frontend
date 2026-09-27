@@ -9,6 +9,7 @@ type DesktopNavbarProps = {
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
   const navigate=useNavigate();
   const isLoggedIn=!!localStorage.getItem('authToken');
+  const userRole = localStorage.getItem('userRole');
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas/92 backdrop-blur-xl">
       <div className="h-[3px] bg-[linear-gradient(90deg,#490a67_0%,#81468d_52%,#490a67_100%)]" />
@@ -41,6 +42,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
         </nav>
 
         <div className="flex items-center gap-3">
+          {userRole==='office' &&(
           <NavLink
             to="/shipments/new"
             className={({ isActive }) =>
@@ -50,7 +52,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             }
           >
             Create
-          </NavLink>
+          </NavLink> )}
           <button
             type="button"
             onClick={onOpenScanner}
