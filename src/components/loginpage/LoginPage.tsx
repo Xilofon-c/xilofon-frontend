@@ -60,7 +60,7 @@ export function LoginPage() {
     return;
   }
   if(password.length<6){
-    setError('Password must contain more than 6 characters.');
+    setError('Password must contain at least 6 characters.');
     return;
   }
   if(password !== checkpassword && activeTab==="SignUp"){
@@ -93,13 +93,14 @@ export function LoginPage() {
       password,
      
     };
-    response=await api.post('/login', loginData);
+    response=await api.post('/data/login', loginData);
 
   }
   const {token, role:userRole}=response.data;
   localStorage.setItem('authToken',token);
   localStorage.setItem('userRole', userRole);
   console.log(`${activeTab} successful!`);
+  console.log("LOGIN RESPONSE:", response.data);
   if (userRole === 'office') {
   navigate('/');
 } else if (userRole === 'loader') {
@@ -258,7 +259,7 @@ finally{
 
           <button
             type="submit"
-            className="p-2 text-white w-[280px] ml-16 hover:bg-accent-hover bg-accent rounded-sm"
+            className="p-2 text-white w-[280px] ml-5 lg:ml-16 hover:bg-accent-hover bg-accent rounded-sm"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}

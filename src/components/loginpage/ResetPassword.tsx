@@ -42,10 +42,10 @@ catch(err:any){
 };
 
   return (
-    <div className="pt-[30px] flex justify-center items-center "
+    <div className=" mt-40 lg:mt-5 pt-[30px] flex justify-center items-center "
     >
       <motion.div
-        className=" bg-white/80 backdrop-blur-md border border-white rounded-2xl shadow-lg ml-20 w-[550px] h-[500px] "
+        className=" bg-white/80 backdrop-blur-md border border-white rounded-2xl shadow-lg lg:ml-20 w-[340px] h-[340px] lg:w-[500px] lg:h-[480px] "
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.96 }}
@@ -53,11 +53,11 @@ catch(err:any){
       >
         
 
-        <form className=' flex flex-col pt-7 ml-20'
+        <form className=' flex flex-col pt-7 ml-10 lg:ml-20'
         onSubmit={handleResetPassword}>
-          <h1 className=' text-4xl font-bold text-accent'>Reset password</h1>
-          <div className='relative  mt-10 w-[280px]'>
-          <input className=' relative  p-4 border text-black text-xl w-full border-accent border-sm rounded-sm'
+          <h1 className=' text-xl lg:text-4xl font-bold text-accent'>Reset password</h1>
+          <div className='relative  mt-10 w-[270px] lg:w-[300px]'>
+          <input className=' relative  p-4 border text-black text-lg lg:text-xl w-full border-accent border-sm rounded-sm'
           placeholder="Enter new password"
            value={password}
          type={showPassword ? "text" : "password"}
@@ -90,9 +90,9 @@ catch(err:any){
                </p>
                )}
             </div>
-            <div className='mt-10 flex gap-6 text-xl '>
-            <button onClick={()=> navigate('/login')} className='p-3 bg-accent  text-white  rounded-xl hover:bg-accent-hover'>Cancel</button>
-            <button type='submit' className='p-3 bg-accent text-white  rounded-xl hover:bg-accent-hover'>Confirm</button>
+            <div className=' mt-10 lg:mt-10 flex gap-6 text-lg lg:text-xl '>
+            <button onClick={()=> navigate('/login')} className='p-1.5 lg:p-3 bg-accent  text-white  rounded-xl hover:bg-accent-hover'>Cancel</button>
+            <button type='submit' className='p-1.5 lg:p-3 bg-accent text-white  rounded-xl hover:bg-accent-hover'>Confirm</button>
             </div>
           
        
