@@ -5,7 +5,7 @@ import {motion} from 'framer-motion';
 import {Link} from 'react-router-dom';
 import api from '../../api';
 
-type UserRole = 'office' | 'loader';
+type UserRole = 'Office' | 'Loader';
 type AuthTab= 'SignUp' | 'Login';
 
 
@@ -28,7 +28,7 @@ export function LoginPage() {
   
   };
 
-  const [role, setRole] = useState<UserRole>('office');
+  const [role, setRole] = useState<UserRole>('Office');
   const handleRole = (mode: UserRole) => {
     setRole(mode);
   };
@@ -72,11 +72,9 @@ export function LoginPage() {
 
   
 
- try {
- 
-  let response;
-  if(activeTab==='SignUp'){
-    const signUpData={
+try {
+  if (activeTab === 'SignUp') {
+    const signUpData = {
       name,
       surname,
       email,
@@ -84,33 +82,46 @@ export function LoginPage() {
       role,
     };
 
-    response= await api.post('/data/signup', signUpData);
+    const response = await api.post('/data/signup', signUpData);
 
-  }
+    console.log('SignUp successful!');
+    console.log('SIGNUP RESPONSE:', response.data);
+
+    
+    setActiveTab('Login');
+    setPassword('');
+    setCheckPassword('');
+  } 
+  
   else {
-    const loginData={
+    const loginData = {
       email,
       password,
-     
     };
-    response=await api.post('/data/login', loginData);
 
+    const response = await api.post('/data/login', loginData);
+
+    console.log('Login successful!');
+    console.log('LOGIN RESPONSE:', response.data);
+
+    const { token, role: userRole } = response.data;
+
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userRole', userRole);
+
+    if (userRole === 'office') {
+      navigate('/');
+    } else if (userRole === 'loader') {
+      navigate('/account');
+    }
   }
-  const {token, role:userRole}=response.data;
-  localStorage.setItem('authToken',token);
-  localStorage.setItem('userRole', userRole);
-  console.log(`${activeTab} successful!`);
-  console.log("LOGIN RESPONSE:", response.data);
-  if (userRole === 'office') {
-  navigate('/');
-} else if (userRole === 'loader') {
-  navigate('/account');
-}
-  }
-  catch(err:any){
-    const serverErrorMessage =  err.response?.data?.detail || err.response?.data?.message || 'Something went wrong. Please try again.';
-    setError(serverErrorMessage);
- 
+} catch (err: any) {
+  const serverErrorMessage =
+    err.response?.data?.detail ||
+    err.response?.data?.message ||
+    'Something went wrong. Please try again.';
+
+  setError(serverErrorMessage);
 }
 finally{
   setIsLoading(false);
@@ -164,16 +175,16 @@ finally{
               <>
             <button
               type="button"
-              className={role === 'office' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('office')}
+              className={role === 'Office' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Office')}
             >
               Office
             </button>
             <p>|</p>
             <button
               type="button"
-              className={role === 'loader' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('loader')}
+              className={role === 'Loader' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Loader')}
             >
               Loader
             </button> 

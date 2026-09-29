@@ -28,7 +28,7 @@ setLoading(true);
   let response;
   const resetData={email, pin_, password};
   response= await api.post('/data/reset-password', resetData);
-  navigate('/');
+  navigate('/reset-password');
   
 }
 catch(err:any){

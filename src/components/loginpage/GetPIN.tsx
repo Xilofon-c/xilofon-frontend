@@ -42,7 +42,7 @@ const GetPIN = () => {
         console.log('pin_ payload:', pin_);
         
         response=await api.post('/data/verify-pin' ,pin_);
-        navigate('/');
+        navigate('/data/reset-password');
 
       }
       catch(err:any){

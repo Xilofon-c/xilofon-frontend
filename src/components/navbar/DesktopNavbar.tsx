@@ -8,6 +8,7 @@ type DesktopNavbarProps = {
 
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
   const navigate=useNavigate();
+  
   const isLoggedIn=!!localStorage.getItem('authToken');
   const userRole = localStorage.getItem('userRole');
   return (
@@ -72,7 +73,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white">
               OP
             </span>
-            <span className="hidden text-[12px] font-semibold text-ink lg:inline">Office</span>
+            <span className="hidden text-[12px] font-semibold text-ink lg:inline">{userRole}</span>
           </Link>) :(
             <button
                 type="button"
