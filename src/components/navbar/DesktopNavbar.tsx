@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarcodeIcon, BrandMark } from './NavIcons'
+import { BarcodeIcon } from './NavIcons'
 import { NAV_LINKS } from './navConfig'
 import {useNavigate} from 'react-router-dom'
 type DesktopNavbarProps = {
