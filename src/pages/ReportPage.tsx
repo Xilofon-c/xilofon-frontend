@@ -22,12 +22,7 @@ export function ReportPage() {
   }
 
   return (
-    <AppScreen
-      kicker="Supervisor"
-      title="Report a problem"
-      description="Tell the supervisor about damaged cargo, missing boxes, or a load that does not match the plan."
-      narrow
-    >
+    <AppScreen title="Report a problem" narrow>
       <form className="panel" onSubmit={onSubmit} onChange={() => setSentFor(null)}>
         <div className="panel-body grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">

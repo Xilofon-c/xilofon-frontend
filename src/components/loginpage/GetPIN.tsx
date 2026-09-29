@@ -46,6 +46,7 @@ const GetPIN = () => {
   return (
     <AuthLayout
       title="Enter the PIN"
+      showFeatures={false}
       description={
         email ? (
           <>

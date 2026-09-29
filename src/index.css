@@ -131,24 +131,6 @@
     padding: 32px 0 64px;
   }
 
-  .page-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .page-kicker {
-    margin: 0 0 4px;
-    color: var(--faint);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
   .page-title {
     margin: 0;
     color: var(--text);
@@ -162,12 +144,6 @@
     margin: 6px 0 0;
     max-width: 64ch;
     color: var(--muted);
-  }
-
-  .page-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   /* ---- Surfaces ---- */

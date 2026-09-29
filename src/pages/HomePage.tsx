@@ -6,6 +6,7 @@ import { BolUpload } from '../components/page1-main/BolUpload'
 import { TrailerDimensionsForm } from '../components/page1-main/TrailerDimensions'
 import { ShipmentTable } from '../components/shipment/ShipmentTable'
 import { useTrailerForm } from '../hooks/useTrailerForm'
+import { readSession } from '../lib/session'
 import { SHIPMENTS } from '../lib/shipments'
 import type { NewShipmentState } from '../lib/trailer'
 import { AppScreen } from './AppScreen'
@@ -28,6 +29,7 @@ export function HomePage() {
   const trailerForm = useTrailerForm()
   const trailerStep = useRef<HTMLDivElement>(null)
   const [trailerError, setTrailerError] = useState(false)
+  const isOffice = readSession().role === 'office'
 
   function continueToPlan() {
     if (trailerForm.isEmpty) {
@@ -55,19 +57,17 @@ export function HomePage() {
           }}
         />
       )}
-      <AppScreen
-        kicker="Dashboard"
-        title="Load planning"
-        description="Set the trailer, add the bill of lading, and let SmartCargo arrange the cargo."
-      >
-        <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {KPIS.map((kpi) => (
-            <div key={kpi.label} className="panel px-4 py-3">
-              <dt className="text-[13px] text-ink-faint">{kpi.label}</dt>
-              <dd className="mt-0.5 text-[22px] font-semibold tracking-tight tabular-nums">{kpi.value}</dd>
-            </div>
-          ))}
-        </dl>
+      <AppScreen title="Load planning">
+        {isOffice ? (
+          <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {KPIS.map((kpi) => (
+              <div key={kpi.label} className="panel px-4 py-3">
+                <dt className="text-[13px] text-ink-faint">{kpi.label}</dt>
+                <dd className="mt-0.5 text-[22px] font-semibold tracking-tight tabular-nums">{kpi.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
 
         <section className="panel mb-6" aria-labelledby="plan-title">
           <div className="panel-header">

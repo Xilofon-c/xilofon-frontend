@@ -22,12 +22,7 @@ export function AccountPage() {
   }
 
   return (
-    <AppScreen
-      kicker="Profile"
-      title="Account"
-      description="Your profile and access role. An administrator changes roles."
-      narrow
-    >
+    <AppScreen title="Account" narrow>
       <form className="panel" onSubmit={onSubmit}>
         <div className="panel-header">
           <div className="flex items-center gap-3">
