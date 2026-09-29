@@ -2,9 +2,9 @@ import type { CargoItem, CargoPlacement, PackedBox, TrailerInterior } from '../t
 import { parseDimension } from './format'
 
 export const DEFAULT_TRAILER: TrailerInterior = {
-  length: 13.6,
-  width: 2.45,
-  height: 2.7,
+  length: 16.55,
+  width: 2.55,
+  height: 4.0,
 }
 
 export const DECK_HEIGHT = 1.18

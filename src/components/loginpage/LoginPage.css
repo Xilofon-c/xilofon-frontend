@@ -12,16 +12,17 @@
   display:flex;
   flex-direction: column;
     background-color: var(--bg-muted);
-    width:450px;
-    height:600px;
+    width:500px;
+    min-height:660px;
     gap:1em;
     margin:3em auto;
     z-index:3;
 }
 
 .loginphoto{
- width:450px;
-    height:600px;
+ width:500px;
+    height:100%;
+    min-height:660px;
     margin:3em auto;
     object-fit:cover;
    display:block;
@@ -73,7 +74,7 @@
   display:grid;
   grid-template-columns: 1fr 1fr;
   width:100%;
-  max-width:900px;
+  max-width:1000px;
   overflow:hidden;
   border-radius:16px;
 }
@@ -138,8 +139,10 @@
   border-radius:30px;
   border-color:var(--accent);
   text-align: left;
-  padding:10px;
-  width:350px;
+  padding:14px 18px;
+  font-size:16px;
+  width:380px;
+  max-width:100%;
 }
 .input2{
   display:flex;
@@ -150,8 +153,10 @@
   border-radius:30px;
   border-color:var(--accent);
   text-align: left;
-  padding:10px;
-  width:170px;
+  padding:14px 18px;
+  font-size:16px;
+  width:182px;
+  min-width:0;
 }
 .check-box{
   display:flex;
@@ -207,4 +212,99 @@ input[type="checkbox"] {
    color: var(--accent)
    
    
+}
+
+@media (max-width: 600px) {
+
+  .outerworld {
+    padding: 10px;
+  }
+
+  .both {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 180px;
+  }
+
+  .loginphoto {
+    width: 100%;
+    height: 180px;
+    min-height: 0;
+    margin: 0;
+    object-fit: cover;
+  }
+
+  .choice-container {
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    margin: 0;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .choice,
+  .choice-active {
+    width: 90px;
+    height: 45px;
+    font-size: 16px;
+  }
+
+  .container {
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 25px 20px;
+    gap: 1em;
+  }
+
+  .text {
+    font-size: 28px;
+  }
+
+  .status {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .input3 {
+    width: 100%;
+  }
+
+  .input3 input {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .input2 {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .input2 input {
+    box-sizing: border-box;
+    width: 50%;
+    min-width: 0;
+  }
+
+  .startbutton {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    padding: 15px;
+  }
+
+  .check-box,
+  .forgot-password {
+    margin-left: 0;
+  }
 }

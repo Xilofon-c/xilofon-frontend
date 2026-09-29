@@ -116,10 +116,22 @@
 
   /* ---- Layout ---- */
 
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
   .page {
     position: relative;
     min-height: calc(100dvh - var(--header-h));
     background: var(--bg);
+  }
+
+  /* The footer follows the page, so short pages only fill the space above it. */
+  .app-shell > .page {
+    flex: 1 0 auto;
+    min-height: 0;
   }
 
   .wrap {
@@ -161,13 +173,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px 20px;
+    padding: 18px 24px;
     border-bottom: 1px solid var(--line);
   }
 
   .panel-title {
     margin: 0;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -179,7 +191,7 @@
   }
 
   .panel-body {
-    padding: 20px;
+    padding: 24px;
   }
 
   .panel-footer {
@@ -188,7 +200,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
-    padding: 14px 20px;
+    padding: 16px 24px;
     border-top: 1px solid var(--line);
     background: var(--bg-muted);
     border-radius: 0 0 var(--radius) var(--radius);
@@ -212,12 +224,12 @@
   .field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .field-label {
     color: var(--text);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -228,18 +240,18 @@
 
   .field-input {
     width: 100%;
-    min-height: 40px;
-    padding: 0 12px;
+    min-height: 48px;
+    padding: 0 14px;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-sm);
     background: var(--bg-input);
     color: var(--text);
-    font-size: 14px;
+    font-size: 15px;
     transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
   }
 
   textarea.field-input {
-    padding-block: 10px;
+    padding-block: 12px;
     resize: vertical;
   }
 
@@ -285,7 +297,7 @@
   .field-hint {
     margin: 0;
     color: var(--faint);
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .input-suffix {
@@ -315,8 +327,8 @@
   }
 
   .segmented button {
-    min-height: 30px;
-    padding: 0 12px;
+    min-height: 34px;
+    padding: 0 14px;
     border: 0;
     border-radius: 5px;
     background: transparent;
@@ -344,8 +356,8 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
-    padding: 0 16px;
+    min-height: 44px;
+    padding: 0 18px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     font-size: 14px;
@@ -570,10 +582,6 @@
 
   .page-title {
     font-size: 20px;
-  }
-
-  .page {
-    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .page.shipment-workspace {

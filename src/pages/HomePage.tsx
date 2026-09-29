@@ -6,7 +6,7 @@ import { BolUpload } from '../components/page1-main/BolUpload'
 import { TrailerDimensionsForm } from '../components/page1-main/TrailerDimensions'
 import { ShipmentTable } from '../components/shipment/ShipmentTable'
 import { useTrailerForm } from '../hooks/useTrailerForm'
-import { readSession } from '../lib/session'
+import { readRole } from '../lib/session'
 import { SHIPMENTS } from '../lib/shipments'
 import type { NewShipmentState } from '../lib/trailer'
 import { AppScreen } from './AppScreen'
@@ -29,7 +29,7 @@ export function HomePage() {
   const trailerForm = useTrailerForm()
   const trailerStep = useRef<HTMLDivElement>(null)
   const [trailerError, setTrailerError] = useState(false)
-  const isOffice = readSession().role === 'office'
+  const isOffice = readRole() === 'office'
 
   function continueToPlan() {
     if (trailerForm.isEmpty) {
@@ -72,8 +72,11 @@ export function HomePage() {
         <section className="panel mb-6" aria-labelledby="plan-title">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title" id="plan-title">
+              <p className="text-[12px] font-semibold tracking-[0.06em] text-ink-faint uppercase" id="plan-title">
                 Plan a new load
+              </p>
+              <h2 className="mt-1 text-[26px] leading-tight font-bold tracking-tight text-accent sm:text-[30px]">
+                Enter the vehicle size
               </h2>
               <p className="panel-subtitle">Two steps, then SmartCargo calculates the arrangement.</p>
             </div>
@@ -88,7 +91,7 @@ export function HomePage() {
           </div>
 
           <div className="panel-body">
-            <h3 className="mb-1 flex items-center gap-2.5 text-[14px] font-semibold">
+            <h3 className="mb-1 flex items-center gap-2.5 text-[14px] font-semibold" id="bol-title">
               <span className="step-badge">2</span>
               Bill of lading
             </h3>

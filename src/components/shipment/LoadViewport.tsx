@@ -3,24 +3,10 @@ import { Clone, ContactShadows, Grid, OrbitControls, Outlines, useGLTF } from '@
 import { Canvas } from '@react-three/fiber'
 import { DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 import { DEFAULT_TRAILER } from '../../lib/cargo'
+import { DEFAULT_TRAILER_TYPE, TRAILER_TYPES, type TrailerModel } from '../../lib/trailerTypes'
 import type { PackedBox, TrailerInterior } from '../../types'
 
-/** Low Poly Truck by FS 3D Studio, CC-BY-4.0 — https://sketchfab.com/3d-models/low-poly-truck-d61a2ac0a706462ebf82459907f21573 */
-const TRUCK_GLB = '/models/long_truck1_transparent.glb'
-
-useGLTF.preload(TRUCK_GLB)
-
-/**
- * Measured cargo box of the Sketchfab GLB after its baked Y-up transform.
- * Length runs along −Z (cab toward +Z), width along X, wheels sit near groundY.
- */
-const MODEL = {
-  cargoZFront: 1.2191,
-  cargoLength: 16.4197,
-  centerX: 8.3057,
-  groundY: 0.3494,
-  floorY: 2.1073,
-}
+for (const url of new Set(TRAILER_TYPES.map((type) => type.model.url))) useGLTF.preload(url)
 
 type LoadViewportProps = {
   packed: PackedBox[]
@@ -34,6 +20,8 @@ type LoadViewportProps = {
     fillPercent: number
   }
   trailer?: TrailerInterior
+  /** The 3D model for the selected trailer type. */
+  model?: TrailerModel
   /** Marks the weight total red when the cargo is heavier than this. */
   maxWeightKg?: number | null
   className?: string
@@ -56,12 +44,12 @@ function Stat({ label, value, danger = false }: { label: string; value: string |
   )
 }
 
-function truckScale(trailer: TrailerInterior) {
-  return trailer.length / MODEL.cargoLength
+function truckScale(trailer: TrailerInterior, model: TrailerModel) {
+  return trailer.length / model.cargoLength
 }
 
-function deckHeight(trailer: TrailerInterior) {
-  return truckScale(trailer) * (MODEL.floorY - MODEL.groundY)
+function deckHeight(trailer: TrailerInterior, model: TrailerModel) {
+  return truckScale(trailer, model) * (model.floorY - model.groundY)
 }
 
 function isTrailerShell(mesh: Mesh, material: MeshStandardMaterial) {
@@ -70,9 +58,9 @@ function isTrailerShell(mesh: Mesh, material: MeshStandardMaterial) {
   return /backside/i.test(meshName) || /backside/i.test(materialName)
 }
 
-function TruckModel({ trailer }: { trailer: TrailerInterior }) {
-  const { scene } = useGLTF(TRUCK_GLB)
-  const scale = truckScale(trailer)
+function TruckModel({ trailer, model }: { trailer: TrailerInterior; model: TrailerModel }) {
+  const { scene } = useGLTF(model.url)
+  const scale = truckScale(trailer, model)
 
   useLayoutEffect(() => {
     scene.traverse((object) => {
@@ -98,7 +86,7 @@ function TruckModel({ trailer }: { trailer: TrailerInterior }) {
       receiveShadow
       scale={scale}
       rotation={[0, -Math.PI / 2, 0]}
-      position={[scale * MODEL.cargoZFront, -scale * MODEL.groundY, -scale * MODEL.centerX]}
+      position={[scale * model.cargoZFront, -scale * model.groundY, -scale * model.centerX]}
     />
   )
 }
@@ -108,13 +96,15 @@ function CargoMeshes({
   selectedId,
   onSelect,
   trailer,
+  model,
 }: {
   packed: PackedBox[]
   selectedId: string | null
   onSelect: (id: string) => void
   trailer: TrailerInterior
+  model: TrailerModel
 }) {
-  const deckY = deckHeight(trailer)
+  const deckY = deckHeight(trailer, model)
   return (
     <group>
       {packed.map((box) => {
@@ -151,7 +141,13 @@ function CargoMeshes({
   )
 }
 
-function Scene({ packed, selectedId, onSelect, trailer }: Omit<LoadViewportProps, 'stats' | 'className' | 'maxWeightKg'>) {
+function Scene({
+  packed,
+  selectedId,
+  onSelect,
+  trailer,
+  model = DEFAULT_TRAILER_TYPE.model,
+}: Omit<LoadViewportProps, 'stats' | 'className' | 'maxWeightKg'>) {
   const bay = trailer ?? DEFAULT_TRAILER
   return (
     <>
@@ -191,9 +187,9 @@ function Scene({ packed, selectedId, onSelect, trailer }: Omit<LoadViewportProps
       />
       <group position={[-bay.length / 2, 0, 0]}>
         <Suspense fallback={null}>
-          <TruckModel trailer={bay} />
+          <TruckModel key={model.url} trailer={bay} model={model} />
         </Suspense>
-        <CargoMeshes packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={bay} />
+        <CargoMeshes packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={bay} model={model} />
       </group>
       <ContactShadows position={[0, 0.01, 0]} opacity={0.35} scale={40} blur={2.4} far={12} />
       <OrbitControls
@@ -214,6 +210,7 @@ export function LoadViewport({
   onSelect,
   stats,
   trailer,
+  model,
   maxWeightKg = null,
   className = '',
 }: LoadViewportProps) {
@@ -228,7 +225,7 @@ export function LoadViewport({
         camera={{ position: [8.2, 6.1, 14.4], fov: 38, near: 0.1, far: 90 }}
         onPointerMissed={() => onSelect(null)}
       >
-        <Scene packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={trailer} />
+        <Scene packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={trailer} model={model} />
       </Canvas>
 
       <div className="pointer-events-none absolute top-3 left-3 hidden rounded-md border border-line bg-white/90 px-3 py-2 shadow-sm backdrop-blur sm:block">

@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { Plus, ScanBarcode } from 'lucide-react'
+import { LogOut, Plus, ScanBarcode } from 'lucide-react'
 import { initialsOf, readSession, ROLE_LABEL } from '../../lib/session'
 import { isExactRoute, NAV_LINKS } from './navConfig'
 
@@ -13,7 +13,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
   return (
     <header className="sticky top-0 z-50 h-[var(--header-h)] border-b border-line bg-canvas">
       <div className="flex h-full items-center gap-6 px-6">
-        <Link to="/" className="flex shrink-0 items-center" aria-label="SmartCargo dashboard">
+        <Link to="/" className="flex shrink-0 items-center" aria-label="SmartCargo home">
           <img alt="SmartCargo" src="/logo.png" width={118} height={40} className="block h-10 w-auto" />
         </Link>
 
@@ -60,6 +60,14 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
               <span className="block text-[13px] leading-4 font-semibold text-ink">{session.name}</span>
               <span className="block text-[12px] leading-4 text-ink-faint">{ROLE_LABEL[session.role]}</span>
             </span>
+          </Link>
+          <Link
+            to="/logout"
+            className="btn btn-quiet btn-sm px-2"
+            aria-label="Log out"
+            title="Log out"
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
 import { parseDimension } from '../lib/format'
 import { calculateLoad } from '../lib/packingApi'
 import { DEFAULT_TRAILER_SPEC, type NewShipmentState } from '../lib/trailer'
+import { trailerTypeById, typeForSpec } from '../lib/trailerTypes'
 import type { CargoItem, CargoPlacement, TrailerSpec } from '../types'
 
 export function CreateShipmentPage() {
@@ -23,6 +24,7 @@ export function CreateShipmentPage() {
   const [trailer, setTrailer] = useState<TrailerSpec>(
     () => (location.state as NewShipmentState | null)?.trailer ?? DEFAULT_TRAILER_SPEC,
   )
+  const [trailerTypeId, setTrailerTypeId] = useState(() => typeForSpec(trailer).id)
   const [items, setItems] = useState<CargoItem[]>(() => [
     createCargoItem({
       name: 'Pump crate',
@@ -129,7 +131,15 @@ export function CreateShipmentPage() {
               <h1 className="mt-0.5 text-[17px] font-semibold tracking-tight">New shipment</h1>
               <p className="mono text-[12px] text-ink-faint">{shipmentId}</p>
               <div className="mt-2.5">
-                <TrailerSettings trailer={trailer} onChange={changeTrailer} />
+                <TrailerSettings
+                  trailer={trailer}
+                  typeId={trailerTypeId}
+                  onChange={changeTrailer}
+                  onTypeChange={(typeId, next) => {
+                    setTrailerTypeId(typeId)
+                    changeTrailer(next)
+                  }}
+                />
               </div>
             </div>
             <div className="flex min-h-0 flex-1 flex-col">
@@ -183,6 +193,7 @@ export function CreateShipmentPage() {
             onSelect={setSelectedId}
             stats={stats}
             trailer={trailer}
+            model={trailerTypeById(trailerTypeId).model}
             maxWeightKg={trailer.maxWeightKg}
           />
         </div>

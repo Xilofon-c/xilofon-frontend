@@ -2,18 +2,49 @@ import { useState, type FormEvent } from 'react'
 import { Pencil } from 'lucide-react'
 import { useTrailerForm } from '../../hooks/useTrailerForm'
 import { formatPayload, formatTrailer } from '../../lib/trailer'
+import { hasPresetSize, TRAILER_TYPES, trailerTypeById } from '../../lib/trailerTypes'
 import type { TrailerSpec } from '../../types'
 import { TrailerDimensionsForm } from '../page1-main/TrailerDimensions'
 
 type TrailerSettingsProps = {
   trailer: TrailerSpec
+  typeId: string
   onChange: (trailer: TrailerSpec) => void
+  /** Sets the type and replaces the size with the type's preset. */
+  onTypeChange: (typeId: string, trailer: TrailerSpec) => void
 }
 
-export function TrailerSettings({ trailer, onChange }: TrailerSettingsProps) {
+export function TrailerSettings({ trailer, typeId, onChange, onTypeChange }: TrailerSettingsProps) {
   const [editing, setEditing] = useState(false)
   const form = useTrailerForm(trailer)
   const payload = formatPayload(trailer)
+  const type = trailerTypeById(typeId)
+  const customSize = !hasPresetSize(type, trailer)
+
+  const typeSelect = (
+    <div className="field mb-3">
+      <label className="text-[12px] font-medium text-ink-faint" htmlFor="trailer-type">
+        Trailer type
+      </label>
+      <select
+        id="trailer-type"
+        className="field-input min-h-10 text-[14px]"
+        value={typeId}
+        onChange={(event) => {
+          const next = trailerTypeById(event.target.value)
+          onTypeChange(next.id, { ...next.spec, units: trailer.units })
+          setEditing(false)
+        }}
+      >
+        {TRAILER_TYPES.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {customSize ? <p className="field-hint">Custom size. Select the type again to restore its size.</p> : null}
+    </div>
+  )
 
   function startEditing() {
     form.reset(trailer)
@@ -30,6 +61,8 @@ export function TrailerSettings({ trailer, onChange }: TrailerSettingsProps) {
 
   if (!editing) {
     return (
+      <>
+      {typeSelect}
       <div className="flex items-center justify-between gap-3">
         <dl className="min-w-0 text-[12px]">
           <div className="flex gap-1.5">
@@ -43,13 +76,16 @@ export function TrailerSettings({ trailer, onChange }: TrailerSettingsProps) {
         </dl>
         <button type="button" className="btn btn-ghost btn-sm shrink-0" onClick={startEditing}>
           <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-          Edit trailer
+          Edit size
         </button>
       </div>
+      </>
     )
   }
 
   return (
+    <>
+    {typeSelect}
     <form
       className="rounded-[var(--radius)] border border-line bg-canvas-muted p-3"
       onSubmit={onSubmit}
@@ -66,5 +102,6 @@ export function TrailerSettings({ trailer, onChange }: TrailerSettingsProps) {
         </button>
       </div>
     </form>
+    </>
   )
 }

@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom'
-import { Plus, ScanBarcode, type LucideIcon } from 'lucide-react'
-import { isExactRoute, NAV_LINKS } from './navConfig'
+import { ScanBarcode, type LucideIcon } from 'lucide-react'
+import { initialsOf, readSession } from '../../lib/session'
+import { isExactRoute, MOBILE_EXTRA_LINK, NAV_LINKS } from './navConfig'
 
 type MobileNavbarProps = {
   onOpenScanner: () => void
@@ -12,18 +13,22 @@ const PILL_MASK = {
 }
 
 export function MobileNavbar({ onOpenScanner }: MobileNavbarProps) {
+  const session = readSession()
   const left = NAV_LINKS.slice(0, 2)
-  const right = NAV_LINKS.slice(2)
+  const right = [...NAV_LINKS.slice(2), MOBILE_EXTRA_LINK]
 
   return (
     <>
       <header className="sticky top-0 z-50 flex h-[var(--header-h)] items-center justify-between border-b border-line bg-canvas px-4">
-        <Link to="/" aria-label="SmartCargo dashboard">
+        <Link to="/" aria-label="SmartCargo home">
           <img alt="SmartCargo" src="/logo.png" width={100} height={34} className="block h-8 w-auto" />
         </Link>
-        <Link to="/shipments/new" className="btn btn-primary btn-sm" aria-label="New shipment">
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          New
+        <Link
+          to="/account"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white"
+          aria-label={`Account: ${session.name}`}
+        >
+          {initialsOf(session.name)}
         </Link>
       </header>
 

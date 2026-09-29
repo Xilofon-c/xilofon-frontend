@@ -104,7 +104,7 @@ export function TrailerDimensionsForm({ form, compact = false, idPrefix = 'dim' 
         </div>
         {fields}
         <p className="field-hint">
-          Leave the fields empty to use the standard 13.6 m trailer. You can change the size in the next step.
+          Leave the fields empty to use the standard 16.55 × 2.55 × 4.0 m trailer. You can change the size in the next step.
         </p>
       </div>
 
