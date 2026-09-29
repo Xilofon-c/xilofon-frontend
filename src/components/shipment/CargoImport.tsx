@@ -1,6 +1,6 @@
-import { useId, useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react'
+import { useId, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { Upload } from 'lucide-react'
 import { extractCargoFromDocument } from '../../lib/bolApi'
-import { formatFileSize } from '../../lib/format'
 import { parseCargoFile } from '../../lib/parseCargoFile'
 import type { CargoItem } from '../../types'
 
@@ -28,6 +28,7 @@ const MAX_BYTES = 15 * 1024 * 1024
 
 type CargoImportProps = {
   onImported: (items: CargoItem[], fileName: string) => void
+  children?: ReactNode
 }
 
 function extensionOf(name: string) {
@@ -52,10 +53,9 @@ async function readFile(file: File): Promise<CargoItem[]> {
   }
 }
 
-export function CargoImport({ onImported }: CargoImportProps) {
+export function CargoImport({ onImported, children }: CargoImportProps) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
@@ -92,52 +92,21 @@ export function CargoImport({ onImported }: CargoImportProps) {
     event.target.value = ''
   }
 
-  function onDrop(event: DragEvent<HTMLDivElement>) {
-    event.preventDefault()
-    setDragging(false)
-    void applyFile(event.dataTransfer.files?.[0] ?? null)
-  }
-
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      inputRef.current?.click()
-    }
-  }
-
   return (
-    <section className="px-4 py-3" aria-labelledby={`${inputId}-title`}>
-      <h2 id={`${inputId}-title`} className="text-[11px] font-semibold tracking-[0.08em] text-accent uppercase">
-        Import
-      </h2>
-      <p className="mt-1 mb-2 text-[12px] leading-5 text-ink-muted">
-        Drop a BOL, Excel sheet, or CSV. Extracted cargo is appended to the list.
-      </p>
-
-      <div
-        className={`grid min-h-[7.5rem] place-items-center rounded-xl border border-dashed px-3 py-4 text-center transition ${
-          dragging ? 'border-accent bg-[#f5e7f6]' : error ? 'border-danger bg-[#fef6f6]' : 'border-line-strong bg-canvas-muted'
-        } ${busy ? 'opacity-70' : 'cursor-pointer hover:border-accent hover:bg-[#f9f0fa]'}`}
-        role="button"
-        tabIndex={0}
-        aria-busy={busy}
-        aria-label="Upload bill of lading or cargo spreadsheet"
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={onKeyDown}
-        onDragEnter={(event) => {
-          event.preventDefault()
-          setDragging(true)
-        }}
-        onDragOver={(event) => event.preventDefault()}
-        onDragLeave={(event) => {
-          const next = event.relatedTarget
-          if (next instanceof Node && event.currentTarget.contains(next)) return
-          setDragging(false)
-        }}
-        onDrop={onDrop}
-      >
-        <p className="text-[13px] font-semibold text-ink">{busy ? 'Reading file…' : 'Drop file or click to browse'}</p>
-        <p className="mt-1 text-[12px] text-ink-faint">PDF, Excel, CSV, Word, or image · 15 MB max</p>
+    <div className="relative flex shrink-0 flex-col items-end gap-1.5">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          aria-busy={busy}
+          title="Import cargo from a BOL, spreadsheet, or CSV"
+        >
+          <Upload className="h-4 w-4" aria-hidden="true" />
+          {busy ? 'Importing…' : 'Import'}
+        </button>
+        {children}
       </div>
 
       <input
@@ -146,20 +115,19 @@ export function CargoImport({ onImported }: CargoImportProps) {
         className="visually-hidden"
         type="file"
         accept={ACCEPT}
+        tabIndex={-1}
         onChange={onChange}
       />
 
       {error ? (
-        <p className="mt-2 text-[12px] text-danger" role="alert">
+        <p className="max-w-[16rem] text-right text-[12px] leading-5 text-danger" role="alert">
           {error}
         </p>
       ) : status ? (
-        <p className="mt-2 text-[12px] text-ok">{status}</p>
-      ) : (
-        <p className="mt-2 text-[12px] text-ink-faint">
-          Columns: name, length, width, height, weight, flags. Max {formatFileSize(MAX_BYTES)}.
+        <p className="max-w-[16rem] text-right text-[12px] leading-5 text-ok" role="status">
+          {status}
         </p>
-      )}
-    </section>
+      ) : null}
+    </div>
   )
 }

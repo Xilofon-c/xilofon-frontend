@@ -1,4 +1,4 @@
-import type { UnitSystem } from '../types'
+import type { UnitSystem } from '../../types'
 
 type Props = {
   length: number
@@ -44,16 +44,16 @@ export function TrailerPreview({ length, width, height, units }: Props) {
     value > 0 ? `${value.toFixed(1)} ${unit}` : '—'
 
   const unit = units === 'metric' ? 'm' : 'ft'
-  const stroke = '#5c0771'
-  const strokeSoft = '#bb99c2'
+  const stroke = '#490a67'
+  const strokeSoft = '#c9b3d4'
   const label = '#71717a'
 
   return (
-    <svg className="preview-svg" viewBox="0 0 480 280" role="img" aria-label="Trailer size preview">
+    <svg className="mx-auto block h-auto max-h-44 w-full" viewBox="0 0 480 280" role="img" aria-label="Trailer size preview">
       <defs>
         <linearGradient id="bay" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f3ecfd" />
-          <stop offset="100%" stopColor="#f8fafc" />
+          <stop offset="0%" stopColor="#efe6f4" />
+          <stop offset="100%" stopColor="#ffffff" />
         </linearGradient>
       </defs>
       <polygon

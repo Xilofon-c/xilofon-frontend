@@ -1,103 +1,115 @@
-import React,{useRef, useState} from 'react';
+import { useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { AuthLayout } from './AuthLayout'
 
-import {motion} from 'framer-motion';
+const PIN_LENGTH = 4
+
 const GetPIN = () => {
-           const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-    const[pin, setPin]=useState<string []>(['','','','']);
-    const HandlePinChange=(value:string, index:number)=>{
-         const NewPin=[...pin];
-         NewPin[index]=value;
-         setPin(NewPin);
+  const location = useLocation()
+  const email = (location.state as { email?: string } | null)?.email
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [pin, setPin] = useState<string[]>(() => Array(PIN_LENGTH).fill(''))
+  const [error, setError] = useState<string | null>(null)
+  const [resent, setResent] = useState(false)
 
-         if(value && index<3){
-            inputRefs.current[index+1]?.focus();
-         }
+  function setDigit(index: number, raw: string) {
+    const digit = raw.replace(/\D/g, '').slice(-1)
+    setPin((current) => current.map((value, i) => (i === index ? digit : value)))
+    setError(null)
+    if (digit && index < PIN_LENGTH - 1) inputRefs.current[index + 1]?.focus()
+  }
+
+  function onKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Backspace' && !pin[index] && index > 0) inputRefs.current[index - 1]?.focus()
+    if (event.key === 'ArrowLeft' && index > 0) inputRefs.current[index - 1]?.focus()
+    if (event.key === 'ArrowRight' && index < PIN_LENGTH - 1) inputRefs.current[index + 1]?.focus()
+  }
+
+  function onPaste(event: ClipboardEvent<HTMLInputElement>) {
+    const digits = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, PIN_LENGTH)
+    if (!digits) return
+    event.preventDefault()
+    setPin(Array.from({ length: PIN_LENGTH }, (_, i) => digits[i] ?? ''))
+    inputRefs.current[Math.min(digits.length, PIN_LENGTH - 1)]?.focus()
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (pin.some((digit) => digit === '')) {
+      setError(`Enter all ${PIN_LENGTH} digits.`)
+      return
     }
-
- 
-    
+    setError('The PIN check is not connected yet.')
+  }
 
   return (
-   <div className="pt-[30px]">
-      <motion.div
-        className=" ml-20 grid grid-cols-2 w-[1200px] h-[600px] "
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.96 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-      >
-        <div>
-        <img
-          className="h-[500px] mt-10"
-          src="./forgotpass.png"
-          alt="forgot-password-image"
-        />
-        </div>
-
-        <div className=' flex flex-col pt-[130px] '>
-          <h1 className='text-3xl font-bold text-accent'>Forgot Password?</h1>
-          <p className=' mt-5 text-sm color-muted '>Enter the PIN code sent to your email.</p>
-          <div className='grid grid-cols-5 w-[400px] h-[100px] mt-10'>
-             
-                <input type='text'
+    <AuthLayout
+      title="Enter the PIN"
+      description={
+        email ? (
+          <>
+            We sent a {PIN_LENGTH}-digit PIN to <strong className="text-ink">{email}</strong>.
+          </>
+        ) : (
+          `Enter the ${PIN_LENGTH}-digit PIN from your email.`
+        )
+      }
+      footer={
+        <Link to="/forgot-password" className="link inline-flex items-center gap-1.5">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Use a different email
+        </Link>
+      }
+    >
+      <form className="grid gap-4" onSubmit={onSubmit} noValidate>
+        <fieldset className="field">
+          <legend className="field-label mb-1.5">PIN code</legend>
+          <div className="flex gap-3">
+            {pin.map((digit, index) => (
+              <input
+                key={index}
                 ref={(element) => {
-                  inputRefs.current[0] = element;
-                 }}
-                value={pin[0]}
-                 maxLength={1}
-                  onChange={(e)=>HandlePinChange(e.target.value, 0)}
-                className='border-2 border-gray-500 w-[40px] h-[50px] rounded-xl  p-2'
-                />
-            
-               
-                <input type='text'
-                ref={(element) => {
-                  inputRefs.current[1] = element;
-                 }}
-                value={pin[1]}
+                  inputRefs.current[index] = element
+                }}
+                className={`field-input h-14 w-14 p-0 text-center text-[22px] font-semibold tabular-nums${error ? ' is-invalid' : ''}`}
+                inputMode="numeric"
+                autoComplete={index === 0 ? 'one-time-code' : 'off'}
                 maxLength={1}
-                onChange={(e)=>HandlePinChange(e.target.value, 1)}
-                className='border-2 border-gray-500 w-[40px] h-[50px] rounded-xl p-2'
-                />
-            
-               
-                <input type='text'
-                ref={(element) => {
-                  inputRefs.current[2] = element;
-                 }}
-                value={pin[2]}
-                 maxLength={1}
-                  onChange={(e)=>HandlePinChange(e.target.value, 2)}
-                    className='border-2 border-gray-500 w-[40px] h-[50px] rounded-xl p-2'
-                />
-             
-                
-                    <input type='text'
-                    ref={(element) => {
-                  inputRefs.current[3] = element;
-                 }}
-                value={pin[3]}
-                 maxLength={1}
-                  onChange={(e)=>HandlePinChange(e.target.value, 3)}
-                 className='border-2 border-gray-500 w-[40px] h-[50px] rounded-xl p-2'
+                value={digit}
+                aria-label={`Digit ${index + 1} of ${PIN_LENGTH}`}
+                onChange={(event) => setDigit(index, event.target.value)}
+                onKeyDown={(event) => onKeyDown(index, event)}
+                onPaste={onPaste}
+                onFocus={(event) => event.target.select()}
+              />
+            ))}
+          </div>
+          {error ? (
+            <p className="field-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </fieldset>
 
-                />
-               </div>
-       
-          <div className="flex ">
-
-            <button
-              type="button"
-              className=" button-pin w-[280px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl"
-            >
-              Verify PIN
-            </button>
-        </div>
-       
-    </div>
-      </motion.div>
-    </div>
-  );
-};
+        <button type="submit" className="btn btn-primary w-full">
+          Verify PIN
+        </button>
+        <p className="text-center text-[13px] text-ink-muted">
+          {resent ? (
+            'A new PIN is on the way.'
+          ) : (
+            <>
+              No email?{' '}
+              <button type="button" className="link" onClick={() => setResent(true)}>
+                Send the PIN again
+              </button>
+            </>
+          )}
+        </p>
+      </form>
+    </AuthLayout>
+  )
+}
 
 export default GetPIN

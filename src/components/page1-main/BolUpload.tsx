@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { FileText, Upload, X } from 'lucide-react'
 import { formatFileSize } from '../../lib/format'
 import './BolUpload.css'
 
@@ -85,103 +85,78 @@ export function BolUpload() {
   }
 
   return (
-    <motion.section
-      className="section"
-      id="bol"
-      aria-labelledby="bol-title"
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="wrapbol">
-
-        <div className="panel bol-drop">
-          <div
-            className={`dropzone${dragging ? ' is-dragging' : ''}${error ? ' is-invalid' : ''}`}
-            role="button"
-            tabIndex={0}
-            onClick={() => inputRef.current?.click()}
-            onKeyDown={onKeyDown}
-            aria-label="Upload bill of lading"
-            onDragEnter={(event) => {
-              event.preventDefault()
-              setDragging(true)
-            }}
-            onDragOver={(event) => event.preventDefault()}
-            onDragLeave={(event) => {
-              const next = event.relatedTarget
-              if (next instanceof Node && event.currentTarget.contains(next)) return
-              setDragging(false)
-            }}
-            onDrop={onDrop}
-            aria-describedby={`${inputId}-hint`}
-          >
-            <div className="drop-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 16V4m0 0 4 4M12 4 8 8M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <h3>{file ? 'Replace document' : 'Drop BOL here or click to browse'}</h3>
-            <p id={`${inputId}-hint`}>
-              PDF, images, Word, Excel, CSV, or plain text. Maximum 15 MB.
-            </p>
-            <p className="drop-hint">Keyboard: focus and press Enter</p>
+    <div>
+      {file ? (
+        <div className="file-card">
+          <span className="file-icon" aria-hidden="true">
+            <FileText className="h-5 w-5" />
+          </span>
+          <div className="file-meta">
+            <p className="file-name">{file.name}</p>
+            <span className="file-size">
+              {formatFileSize(file.size)} · {extensionOf(file.name).toUpperCase() || 'File'}
+            </span>
           </div>
-
-          <input
-            id={inputId}
-            ref={inputRef}
-            className="visually-hidden"
-            type="file"
-            accept={ACCEPT}
-            onChange={onChange}
-          />
-          <label htmlFor={inputId} className="visually-hidden">
-            Bill of lading file
-          </label>
-
-          <AnimatePresence>
-            {file ? (
-              <motion.div
-                className="file-card"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-              >
-                <div className="file-meta">
-                  <p className="file-name">{file.name}</p>
-                  <span className="file-size">
-                    {formatFileSize(file.size)} · {file.type || 'unknown type'}
-                  </span>
-                </div>
-                <div className="file-actions">
-                  <button className="btn btn-ghost" type="button" onClick={() => inputRef.current?.click()}>
-                    Replace
-                  </button>
-                  <button className="btn btn-ghost" type="button" onClick={removeFile}>
-                    Remove
-                  </button>
-                </div>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          {error ? (
-            <p className="bol-error" role="alert">
-              {error}
-            </p>
-          ) : file ? (
-            <p className="bol-ok">Document staged locally.</p>
-          ) : null}
+          <div className="file-actions">
+            <button className="btn btn-ghost btn-sm" type="button" onClick={() => inputRef.current?.click()}>
+              Replace
+            </button>
+            <button className="btn btn-quiet btn-sm" type="button" onClick={removeFile} aria-label="Remove document">
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
-      </div>
-    </motion.section>
+      ) : (
+        <div
+          className={`dropzone${dragging ? ' is-dragging' : ''}${error ? ' is-invalid' : ''}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={onKeyDown}
+          aria-label="Upload bill of lading"
+          onDragEnter={(event) => {
+            event.preventDefault()
+            setDragging(true)
+          }}
+          onDragOver={(event) => event.preventDefault()}
+          onDragLeave={(event) => {
+            const next = event.relatedTarget
+            if (next instanceof Node && event.currentTarget.contains(next)) return
+            setDragging(false)
+          }}
+          onDrop={onDrop}
+          aria-describedby={`${inputId}-hint`}
+        >
+          <span className="drop-icon" aria-hidden="true">
+            <Upload className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="drop-title">
+              Drop the BOL here or <span className="link">browse files</span>
+            </p>
+            <p className="drop-hint" id={`${inputId}-hint`}>
+              PDF, image, Word, Excel, CSV, or TXT. Maximum 15 MB.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <input
+        id={inputId}
+        ref={inputRef}
+        className="visually-hidden"
+        type="file"
+        accept={ACCEPT}
+        tabIndex={-1}
+        onChange={onChange}
+        aria-label="Bill of lading file"
+      />
+
+      {error ? (
+        <p className="alert alert-danger mt-3" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
   )
 }

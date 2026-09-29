@@ -1,242 +1,240 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './LoginPage.css';
-import {motion} from 'framer-motion';
-import {Link} from 'react-router-dom';
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import { ROLE_LABEL, writeSession, type UserRole } from '../../lib/session'
+import { AuthLayout } from './AuthLayout'
 
-type UserRole = 'office' | 'loader';
-type AuthTab= 'SignUp' | 'Login';
+type AuthTab = 'login' | 'signup'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MIN_PASSWORD = 6
 
 export function LoginPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const [tab, setTab] = useState<AuthTab>('login')
+  const [role, setRole] = useState<UserRole>('office')
+  const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [agreed, setAgreed] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const [activeTab, setActiveTab] = useState<AuthTab>('SignUp');
-  const handleTabSwitch = (mode: AuthTab) => {
-    setActiveTab(mode);
-    setError(null); 
-    setEmail('');
-  setPassword('');
-  setName('');
-    setSurname('');
-  setCheckPassword('');
-  
-  };
+  const signup = tab === 'signup'
 
-  const [role, setRole] = useState<UserRole>('office');
-  const handleRole = (mode: UserRole) => {
-    setRole(mode);
-  };
-  const[name, setName]=useState<string>('');
-  const[surname, setSurname]=useState<string>('');
-  const [username, setUsername]=useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [checkpassword, setCheckPassword]=useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  function switchTab(next: AuthTab) {
+    setTab(next)
+    setError(null)
+    setPassword('')
+    setConfirm('')
+  }
 
-  const isValidEmail = (emailStr: string): boolean => {
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(emailStr);
-};
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-     
-    if (!email || !password || (activeTab==="SignUp" && !name || !surname || !username)) {
-      setError('Please fill in all fields.');
-      return;
+  function validate() {
+    if (!email.trim() || !password || (signup && (!name.trim() || !surname.trim()))) {
+      return 'Fill in all fields.'
     }
-    if (!isValidEmail(email)) {
-    setError('Invalid email format. Must contain "@" and a valid domain (e.g., name@domain.com).');
-    return;
-  }
-  if(password.length<6){
-    setError('Password must contain more than 6 characters.');
-    return;
-  }
-  if(password !== checkpassword && activeTab==="SignUp"){
-    setError('The passwords do not match.');
-      return;
+    if (!EMAIL_PATTERN.test(email.trim())) return 'Enter a valid email address, for example name@company.com.'
+    if (password.length < MIN_PASSWORD) return `The password must have at least ${MIN_PASSWORD} characters.`
+    if (signup && password !== confirm) return 'The passwords do not match.'
+    if (signup && !agreed) return 'Accept the terms and conditions to continue.'
+    return null
   }
 
-    setIsLoading(true);
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const problem = validate()
+    setError(problem)
+    if (problem) return
 
-  
-
- try {
- 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  localStorage.setItem('authToken', 'mock-test-jwt-token');
-
-  console.log(`${activeTab} successful! as ${role}`);
-  navigate('/'); 
-} catch (err: any) {
-  setError('Something went wrong.');
-} finally {
-  setIsLoading(false);
-}
+    setIsLoading(true)
+    try {
+      // Mock request until the auth endpoint exists.
+      await new Promise((resolve) => setTimeout(resolve, 600))
+      const fullName = signup ? `${name.trim()} ${surname.trim()}` : email.trim().split('@')[0]
+      writeSession({ name: fullName, email: email.trim(), role })
+      navigate(role === 'loader' ? '/shipments' : '/')
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  const passwordToggle = (
+    <button
+      type="button"
+      className="absolute top-1/2 right-1.5 grid h-8 w-8 -translate-y-1/2 place-items-center rounded text-ink-faint hover:text-ink"
+      onClick={() => setShowPassword((current) => !current)}
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
+      aria-pressed={showPassword}
+    >
+      {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+    </button>
+  )
 
   return (
-    <div className="outerworld">
-      <motion.div
-        className="both"
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.96 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}>
-     
-      
-        <div className="image-wrapper">
-          <img
-            className="loginphoto"
-            src="https://images.pexels.com/photos/7233359/pexels-photo-7233359.jpeg"
-            alt="Login background"
-          />
-          <div className="choice-container">
-            <button
-              type="button"
-              className={activeTab === 'SignUp' ? 'choice-active' : 'choice'}
-              onClick={() => handleTabSwitch('SignUp')}
-            >
-              SignUp
+    <AuthLayout
+      title={signup ? 'Create your account' : 'Log in to SmartCargo'}
+      description={signup ? 'Set up access for the office or the loading bay.' : 'Welcome back. Enter your details to continue.'}
+      footer={
+        signup ? (
+          <>
+            Already have an account?{' '}
+            <button type="button" className="link" onClick={() => switchTab('login')}>
+              Log in
             </button>
-            <button
-              type="button"
-              className={activeTab === 'Login' ? 'choice-active' : 'choice'}
-              onClick={() => handleTabSwitch('Login')}
-            >
-              Login
+          </>
+        ) : (
+          <>
+            New to SmartCargo?{' '}
+            <button type="button" className="link" onClick={() => switchTab('signup')}>
+              Create an account
             </button>
+          </>
+        )
+      }
+    >
+      <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+        <div className="field">
+          <span className="field-label" id="role-label">
+            I work in
+          </span>
+          <div className="segmented grid grid-cols-2" role="group" aria-labelledby="role-label">
+            {(['office', 'loader'] as const).map((option) => (
+              <button key={option} type="button" aria-pressed={role === option} onClick={() => setRole(option)}>
+                {option === 'office' ? 'Office' : 'Loading bay'}
+              </button>
+            ))}
           </div>
+          <p className="field-hint">
+            {role === 'office'
+              ? 'Create bills of lading and shipment data.'
+              : 'Scan barcodes and load trailers by the plan.'}
+          </p>
         </div>
 
-      
-        <form className="container" onSubmit={handleSubmit}>
-          <div className="header">
-            <div className="text">{activeTab}</div>
-            <div className="underline"></div>
-          </div>
-
-          <div className="status">
-            <button
-              type="button"
-              className={role === 'office' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('office')}
-            >
-              Office
-            </button>
-            <p>|</p>
-            <button
-              type="button"
-              className={role === 'loader' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('loader')}
-            >
-              Loader
-            </button>
-          </div>
-         
-          <div className="inputs">
-             {activeTab==='SignUp' && ( <div className="input2">
-              <input type="text"
-              placeholder="Name"
-               value={name}
-               onChange={(e)=>setName(e.target.value)}
-              />
-            
-               <input type="text"
-              placeholder="Surname"
-               value={surname}
-               onChange={(e)=>setSurname(e.target.value)}
-              />
-                </div>
-            )}
-
-             <div className="input3">
+        {signup ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="field">
+              <label className="field-label" htmlFor="auth-name">
+                First name
+              </label>
               <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="auth-name"
+                className="field-input"
+                autoComplete="given-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
               />
             </div>
-
-            <div className="input3">
+            <div className="field">
+              <label className="field-label" htmlFor="auth-surname">
+                Last name
+              </label>
               <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="auth-surname"
+                className="field-input"
+                autoComplete="family-name"
+                value={surname}
+                onChange={(event) => setSurname(event.target.value)}
               />
             </div>
-
-            <div className="input3" style={{ position: 'relative' }}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="show-password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {activeTab==='SignUp' &&
-            (<div className="input3" style={{ position: 'relative' }}>
-              <input value={checkpassword}
-              placeholder="Verify password"
-              type={showPassword ? 'text':'password' }
-              onChange={(e)=>setCheckPassword(e.target.value)}/>
-               <button
-                type="button"
-                className="show-password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            
-            </div>)}
           </div>
+        ) : null}
 
-          {error && (
-            <div className="error-message" style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
-              {error}
-            </div>
-          )}
+        <div className="field">
+          <label className="field-label" htmlFor="auth-email">
+            Work email
+          </label>
+          <input
+            id="auth-email"
+            className="field-input"
+            type="email"
+            autoComplete="email"
+            placeholder="name@company.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </div>
 
-          {activeTab === 'SignUp' ? (
-            <label className="check-box">
-              <input type="checkbox" required />
-              <span> I agree to the <a href="/terms">Terms & Conditions</a></span>
+        <div className="field">
+          <div className="flex items-baseline justify-between">
+            <label className="field-label" htmlFor="auth-password">
+              Password
             </label>
-          ) : (
-            <div className="forgot-password">
-            <Link to='/forgot-password'>Forgot Password?</Link></div>
-          )}
+            {!signup ? (
+              <Link to="/forgot-password" className="link text-[13px]">
+                Forgot password?
+              </Link>
+            ) : null}
+          </div>
+          <div className="relative">
+            <input
+              id="auth-password"
+              className="field-input pr-11"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete={signup ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+            {passwordToggle}
+          </div>
+          {signup ? <p className="field-hint">At least {MIN_PASSWORD} characters.</p> : null}
+        </div>
 
-          <button
-            type="submit"
-            className="startbutton"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}
-          </button>
+        {signup ? (
+          <div className="field">
+            <label className="field-label" htmlFor="auth-confirm">
+              Confirm password
+            </label>
+            <input
+              id="auth-confirm"
+              className="field-input"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+            />
+          </div>
+        ) : null}
 
-          <a className="back" onClick={() => navigate('/')}>
-            ← Get back to home
-          </a>
-        </form>
-       </motion.div>
-    </div>
-  );
+        {signup ? (
+          <label className="flex items-start gap-2.5 text-[13px] text-ink-muted">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4"
+              checked={agreed}
+              onChange={(event) => setAgreed(event.target.checked)}
+            />
+            <span>
+              I agree to the{' '}
+              <a href="/terms" className="link">
+                terms and conditions
+              </a>
+              .
+            </span>
+          </label>
+        ) : null}
+
+        {error ? (
+          <p className="alert alert-danger" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <button type="submit" className="btn btn-primary w-full" disabled={isLoading} aria-busy={isLoading}>
+          {isLoading
+            ? signup
+              ? 'Creating account…'
+              : 'Logging in…'
+            : signup
+              ? `Create ${ROLE_LABEL[role].toLowerCase()} account`
+              : 'Log in'}
+        </button>
+      </form>
+    </AuthLayout>
+  )
 }

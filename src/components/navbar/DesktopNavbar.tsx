@@ -1,35 +1,33 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarcodeIcon, BrandMark } from './NavIcons'
-import { NAV_LINKS } from './navConfig'
+import { Plus, ScanBarcode } from 'lucide-react'
+import { initialsOf, readSession, ROLE_LABEL } from '../../lib/session'
+import { isExactRoute, NAV_LINKS } from './navConfig'
 
 type DesktopNavbarProps = {
   onOpenScanner: () => void
 }
 
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
-  return (
-    <header className="sticky top-0 z-50 border-b border-line bg-canvas/92 backdrop-blur-xl">
-      <div className="h-[3px] bg-[linear-gradient(90deg,#490a67_0%,#81468d_52%,#490a67_100%)]" />
+  const session = readSession()
 
-      <div className="flex h-16 items-center gap-6 px-5 lg:px-8">
-        <Link to="/" className="flex w-[200px] items-center ml-10" >
-         <img alt="logo" src="logo.png" className='w-[150px]'></img>
-          
+  return (
+    <header className="sticky top-0 z-50 h-[var(--header-h)] border-b border-line bg-canvas">
+      <div className="flex h-full items-center gap-6 px-6">
+        <Link to="/" className="flex shrink-0 items-center" aria-label="SmartCargo dashboard">
+          <img alt="SmartCargo" src="/logo.png" width={118} height={40} className="block h-10 w-auto" />
         </Link>
 
-        <div className="hidden h-8 w-px bg-line sm:block" aria-hidden="true" />
-
-        <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap" aria-label="Primary">
+        <nav className="flex h-full min-w-0 flex-1 items-stretch gap-1 overflow-x-auto" aria-label="Primary">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/' || item.to === '/shipments'}
+              end={isExactRoute(item.to)}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-[13px] font-medium tracking-tight transition ${
+                `relative flex items-center px-3 text-[14px] font-medium whitespace-nowrap transition-colors after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full ${
                   isActive
-                    ? 'bg-canvas-muted text-accent'
-                    : 'text-ink-muted hover:bg-canvas-muted hover:text-ink'
+                    ? 'text-accent after:bg-accent'
+                    : 'text-ink-muted after:bg-transparent hover:text-ink'
                 }`
               }
             >
@@ -38,35 +36,30 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <NavLink
-            to="/shipments/new"
-            className={({ isActive }) =>
-              `inline-flex min-h-10 items-center rounded-lg px-3 text-[13px] font-semibold !text-white transition ${
-                isActive ? 'bg-accent-hover' : 'bg-accent  hover:bg-accent-hover'
-              }`
-            }
-          >
-            Create
-          </NavLink>
-          <button
-            type="button"
-            onClick={onOpenScanner}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line-strong bg-canvas px-3 text-[13px] font-semibold text-ink transition hover:border-accent hover:text-accent"
-          >
-            <BarcodeIcon className="h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={onOpenScanner} className="btn btn-ghost btn-sm">
+            <ScanBarcode className="h-4 w-4" aria-hidden="true" />
             Scan BOL
           </button>
+          <Link to="/shipments/new" className="btn btn-primary btn-sm">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            New shipment
+          </Link>
+
+          <div className="mx-2 h-6 w-px bg-line" aria-hidden="true" />
 
           <Link
             to="/account"
-            className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
-            aria-label="Account profile"
+            className="flex items-center gap-2 rounded-md py-1 pr-2 pl-1 transition-colors hover:bg-canvas-muted"
+            aria-label={`Account: ${session.name}`}
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white">
-              OP
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white">
+              {initialsOf(session.name)}
             </span>
-            <span className="hidden text-[12px] font-semibold text-ink lg:inline">Office</span>
+            <span className="hidden text-left lg:block">
+              <span className="block text-[13px] leading-4 font-semibold text-ink">{session.name}</span>
+              <span className="block text-[12px] leading-4 text-ink-faint">{ROLE_LABEL[session.role]}</span>
+            </span>
           </Link>
         </div>
       </div>

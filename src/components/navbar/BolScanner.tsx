@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { CameraIcon, CloseIcon } from './NavIcons'
+import { Camera, X } from 'lucide-react'
 
 type BolScannerProps = {
   open: boolean
@@ -83,12 +83,12 @@ export function BolScanner({ open, onClose }: BolScannerProps) {
           className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/16"
           aria-label="Close scanner"
         >
-          <CloseIcon className="h-5 w-5" />
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
       </header>
 
       <div
-        className="relative mx-4 min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black"
+        className="relative mx-4 min-h-0 flex-1 overflow-hidden rounded-xl border border-white/10 bg-black"
         style={{ containerType: 'size' }}
       >
         <video
@@ -117,7 +117,7 @@ export function BolScanner({ open, onClose }: BolScannerProps) {
               <p className="text-sm leading-6 text-white/85">{error}</p>
               <button
                 type="button"
-                className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-semibold"
+                className="mt-4 inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-semibold"
                 onClick={() => fileRef.current?.click()}
               >
                 Upload barcode photo
@@ -133,10 +133,10 @@ export function BolScanner({ open, onClose }: BolScannerProps) {
         </p>
         <button
           type="button"
-          className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/8 px-3 text-sm font-semibold"
+          className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md border border-white/15 bg-white/8 px-3 text-sm font-semibold"
           onClick={() => fileRef.current?.click()}
         >
-          <CameraIcon className="h-4 w-4" />
+          <Camera className="h-4 w-4" aria-hidden="true" />
           Photo
         </button>
         <input

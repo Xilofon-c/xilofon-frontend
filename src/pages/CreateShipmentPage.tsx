@@ -1,14 +1,28 @@
-import { useMemo, useState } from 'react'
-import { CargoImport } from '../components/shipment/CargoImport'
+import { useMemo, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { ChevronLeft, LoaderCircle, Boxes } from 'lucide-react'
 import { CargoObjectList } from '../components/shipment/CargoObjectList'
 import { LoadViewport } from '../components/shipment/LoadViewport'
-import { generateBolPdf } from '../lib/bolApi'
-import { cargoHasDimensions, cargoStats, createCargoItem, DEFAULT_TRAILER, newShipmentId, packCargo } from '../lib/cargo'
+import { TrailerSettings } from '../components/shipment/TrailerSettings'
+import {
+  cargoHasDimensions,
+  cargoStats,
+  createCargoItem,
+  layoutFromPlacements,
+  newShipmentId,
+  packCargo,
+} from '../lib/cargo'
 import { parseDimension } from '../lib/format'
-import type { CargoItem } from '../types'
+import { calculateLoad } from '../lib/packingApi'
+import { DEFAULT_TRAILER_SPEC, type NewShipmentState } from '../lib/trailer'
+import type { CargoItem, CargoPlacement, TrailerSpec } from '../types'
 
 export function CreateShipmentPage() {
+  const location = useLocation()
   const [shipmentId] = useState(newShipmentId)
+  const [trailer, setTrailer] = useState<TrailerSpec>(
+    () => (location.state as NewShipmentState | null)?.trailer ?? DEFAULT_TRAILER_SPEC,
+  )
   const [items, setItems] = useState<CargoItem[]>(() => [
     createCargoItem({
       name: 'Pump crate',
@@ -38,24 +52,43 @@ export function CreateShipmentPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [placements, setPlacements] = useState<Map<string, CargoPlacement> | null>(null)
+  const layoutRevision = useRef(0)
 
-  const packed = useMemo(() => packCargo(items), [items])
-  const stats = useMemo(() => cargoStats(items, packed), [items, packed])
+  const packed = useMemo(
+    () => (placements ? layoutFromPlacements(items, placements, trailer) : packCargo(items, trailer)),
+    [items, placements, trailer],
+  )
+  const stats = useMemo(() => cargoStats(items, packed, trailer), [items, packed, trailer])
+
+  function invalidateLayout() {
+    layoutRevision.current += 1
+    setPlacements(null)
+  }
+
+  function changeTrailer(next: TrailerSpec) {
+    setTrailer(next)
+    setGenerateError(null)
+    invalidateLayout()
+  }
 
   function addItem() {
     const next = createCargoItem({ name: `Box ${items.length + 1}` })
     setItems((current) => [...current, next])
     setSelectedId(next.id)
     setGenerateError(null)
+    invalidateLayout()
   }
 
   function updateItem(id: string, patch: Partial<CargoItem>) {
     setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+    if (Object.keys(patch).some((key) => key !== 'name')) invalidateLayout()
   }
 
   function removeItem(id: string) {
     setItems((current) => current.filter((item) => item.id !== id))
     setSelectedId((current) => (current === id ? null : current))
+    invalidateLayout()
   }
 
   async function onGenerate() {
@@ -64,31 +97,20 @@ export function CreateShipmentPage() {
       setGenerateError('Add at least one object with length, width, and height.')
       return
     }
+    const weightless = ready.filter((item) => (parseDimension(item.weight) ?? 0) <= 0)
+    if (weightless.length > 0) {
+      setGenerateError(`Add a weight to: ${weightless.map((item) => item.name.trim() || 'Cargo').join(', ')}.`)
+      return
+    }
 
+    const revision = layoutRevision.current
     setGenerating(true)
     setGenerateError(null)
     try {
-      await generateBolPdf({
-        shipmentId,
-        trailer: {
-          lengthM: DEFAULT_TRAILER.length,
-          widthM: DEFAULT_TRAILER.width,
-          heightM: DEFAULT_TRAILER.height,
-        },
-        items: ready.map((item) => ({
-          id: item.id,
-          name: item.name.trim() || 'Cargo',
-          lengthCm: parseDimension(item.length) ?? 0,
-          widthCm: parseDimension(item.width) ?? 0,
-          heightCm: parseDimension(item.height) ?? 0,
-          weightKg: parseDimension(item.weight) ?? 0,
-          fragile: item.fragile,
-          tiltable: item.tiltable,
-          stackable: item.stackable,
-        })),
-      })
+      const next = await calculateLoad(ready, trailer, trailer.maxWeightKg)
+      if (layoutRevision.current === revision) setPlacements(next)
     } catch (error) {
-      setGenerateError(error instanceof Error ? error.message : 'Could not generate the BOL.')
+      setGenerateError(error instanceof Error ? error.message : 'Could not calculate the load.')
     } finally {
       setGenerating(false)
     }
@@ -97,28 +119,18 @@ export function CreateShipmentPage() {
   return (
     <div className="page shipment-workspace">
       <main id="main" className="relative flex h-full min-h-0 flex-col">
-        <div className="absolute top-3 right-3 z-30 flex max-w-[min(100%-1.5rem,24rem)] flex-col items-end gap-2">
-          <button
-            type="button"
-            className="btn btn-primary min-h-10 px-5 shadow-[0_8px_20px_rgba(73,10,103,0.22)]"
-            onClick={() => void onGenerate()}
-            disabled={generating}
-            aria-busy={generating}
-          >
-            {generating ? 'Generating…' : 'Generate'}
-          </button>
-          {generateError ? (
-            <p className="rounded-lg bg-white/95 px-3 py-2 text-right text-[12px] text-danger shadow-sm" role="alert">
-              {generateError}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(220px,42vh)_minmax(0,1fr)] lg:grid-cols-[minmax(20rem,24.5rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(220px,40vh)_minmax(0,1fr)] lg:grid-cols-[minmax(22rem,26rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
           <aside className="relative z-10 order-2 flex min-h-0 flex-col border-t border-line bg-canvas lg:order-1 lg:border-t-0 lg:border-r">
             <div className="border-b border-line px-4 py-3">
-              <p className="text-[11px] font-semibold tracking-[0.08em] text-ink-faint uppercase">New shipment</p>
-              <p className="font-mono text-[13px] font-semibold tracking-tight text-ink">{shipmentId}</p>
+              <Link to="/shipments" className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-faint hover:text-accent">
+                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                Shipments
+              </Link>
+              <h1 className="mt-0.5 text-[17px] font-semibold tracking-tight">New shipment</h1>
+              <p className="mono text-[12px] text-ink-faint">{shipmentId}</p>
+              <div className="mt-2.5">
+                <TrailerSettings trailer={trailer} onChange={changeTrailer} />
+              </div>
             </div>
             <div className="flex min-h-0 flex-1 flex-col">
               <CargoObjectList
@@ -128,16 +140,39 @@ export function CreateShipmentPage() {
                 onChange={updateItem}
                 onRemove={removeItem}
                 onAdd={addItem}
-              />
-            </div>
-            <div className="shrink-0 border-t border-line bg-canvas">
-              <CargoImport
                 onImported={(imported) => {
                   setItems((current) => [...current, ...imported])
                   setSelectedId(imported.at(-1)?.id ?? null)
                   setGenerateError(null)
+                  invalidateLayout()
                 }}
               />
+            </div>
+            <div className="grid gap-2 border-t border-line bg-canvas px-4 py-3">
+              {generateError ? (
+                <p className="alert alert-danger" role="alert">
+                  {generateError}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                className="btn btn-primary w-full"
+                onClick={() => void onGenerate()}
+                disabled={generating || items.length === 0}
+                aria-busy={generating}
+              >
+                {generating ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Boxes className="h-4 w-4" aria-hidden="true" />
+                )}
+                {generating ? 'Calculating…' : placements ? 'Recalculate load plan' : 'Generate load plan'}
+              </button>
+              <p className="text-center text-[12px] text-ink-faint">
+                {placements
+                  ? 'Showing the optimised plan. Edits reset it to the draft layout.'
+                  : 'Showing a draft layout. Generate to optimise it.'}
+              </p>
             </div>
           </aside>
 
@@ -147,6 +182,8 @@ export function CreateShipmentPage() {
             selectedId={selectedId}
             onSelect={setSelectedId}
             stats={stats}
+            trailer={trailer}
+            maxWeightKg={trailer.maxWeightKg}
           />
         </div>
       </main>

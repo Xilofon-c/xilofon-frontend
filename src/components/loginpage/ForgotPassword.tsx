@@ -1,89 +1,69 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import './ForgotPassword.css';
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { AuthLayout } from './AuthLayout'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
-  const isValidEmail = (emailStr: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(emailStr);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!email) {
-      setError('Please fill in all fields.');
-      return;
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const value = email.trim()
+    if (!value) {
+      setError('Enter your email address.')
+      return
     }
-
-    if (!isValidEmail(email)) {
-      setError('Invalid email format. Must contain "@" and a valid domain (e.g., name@domain.com).');
-      return;
+    if (!EMAIL_PATTERN.test(value)) {
+      setError('Enter a valid email address, for example name@company.com.')
+      return
     }
-
-    try {
-      setLoading(true);
-      navigate('/input-pin', { state: { email } });
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setError(null)
+    navigate('/input-pin', { state: { email: value } })
+  }
 
   return (
-    <div className="">
-      <motion.div
-        className=" ml-20 grid grid-cols-2 w-[1200px] h-[600px]  align-center justify-center"
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.96 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-      >
-        <img
-          className="h-[500px] mt-10"
-          src="./forgotpass.png"
-          alt="forgot-password-image"
-        />
-
-        <form className="flex p-10" onSubmit={handleSubmit}>
-          <div className="flex flex-col flex align-center justify-center ">
-            <h1 className="text-3xl font-bold text-accent">Forgot Password?</h1>
-            <p className="mt-5 text-m w-[270px]">
-              Enter your email address and we will send you a PIN code to confirm your identity.
+    <AuthLayout
+      title="Reset your password"
+      description="Enter the email for your account. We send you a 4-digit PIN to confirm your identity."
+      footer={
+        <Link to="/login" className="link inline-flex items-center gap-1.5">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Back to log in
+        </Link>
+      }
+    >
+      <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+        <div className="field">
+          <label className="field-label" htmlFor="reset-email">
+            Work email
+          </label>
+          <input
+            id="reset-email"
+            className={`field-input${error ? ' is-invalid' : ''}`}
+            type="email"
+            autoComplete="email"
+            placeholder="name@company.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'reset-email-error' : undefined}
+          />
+          {error ? (
+            <p className="field-error" id="reset-email-error" role="alert">
+              {error}
             </p>
+          ) : null}
+        </div>
+        <button type="submit" className="btn btn-primary w-full">
+          Send PIN
+        </button>
+      </form>
+    </AuthLayout>
+  )
+}
 
-            <input
-              placeholder="Email"
-              value={email}
-              type="email"
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border-2 border-accent mt-10 p-3 w-[300px]"
-            />
-
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-5 mr-4 button-pin w-[300px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl disabled:opacity-50 transition-opacity"
-              >
-                {loading ? 'Sending...' : 'Send PIN'}
-              </button>
-            </div>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
-
-export default ForgotPassword;
+export default ForgotPassword

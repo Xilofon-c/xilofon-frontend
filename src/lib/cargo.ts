@@ -1,4 +1,4 @@
-import type { CargoItem, PackedBox, TrailerInterior } from '../types'
+import type { CargoItem, CargoPlacement, PackedBox, TrailerInterior } from '../types'
 import { parseDimension } from './format'
 
 export const DEFAULT_TRAILER: TrailerInterior = {
@@ -210,15 +210,42 @@ export function packCargo(
     stillOpen.push(item)
   }
 
+  packed.push(...parkOverflow(stillOpen, trailer))
+  console.log(packed)
+  return packed
+}
+
+function parkOverflow(items: CargoItem[], trailer: TrailerInterior): PackedBox[] {
+  const parked: PackedBox[] = []
   let parkZ = trailer.width + 0.55
-  for (const item of stillOpen) {
+  for (const item of items) {
     const length = cmToM(item.length) ?? 0.5
     const width = cmToM(item.width) ?? 0.4
     const height = cmToM(item.height) ?? 0.4
-    packed.push(makeBox(item, trailer.length + 1.25, 0, parkZ, length, width, height, false))
+    parked.push(makeBox(item, trailer.length + 1.25, 0, parkZ, length, width, height, false))
     parkZ += width + GAP
   }
-  console.log(packed)
+  return parked
+}
+
+export function layoutFromPlacements(
+  items: CargoItem[],
+  placements: Map<string, CargoPlacement>,
+  trailer: TrailerInterior = DEFAULT_TRAILER,
+): PackedBox[] {
+  const packed: PackedBox[] = []
+  const overflow: CargoItem[] = []
+  for (const item of items) {
+    if (!cargoHasDimensions(item)) continue
+    const placement = placements.get(item.id)
+    if (!placement) {
+      overflow.push(item)
+      continue
+    }
+    const { x, y, z, length, width, height } = placement
+    packed.push(makeBox(item, x, y, z, length, width, height, true))
+  }
+  packed.push(...parkOverflow(overflow, trailer))
   return packed
 }
 
