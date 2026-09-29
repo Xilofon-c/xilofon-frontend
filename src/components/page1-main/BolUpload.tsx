@@ -86,7 +86,7 @@ export function BolUpload() {
 
   return (
     <motion.section
-      className="section"
+      className="bolsection"
       id="bol"
       aria-labelledby="bol-title"
       initial={{ opacity: 0, y: 28 }}

@@ -11,7 +11,7 @@ export function AppScreen({
 }) {
   return (
     <div className="page">
-      <main id="main" className="section" style={{ paddingTop: 40 }}>
+      <main id="main" className="section" style={{ paddingTop: 20 }}>
         <div className="wrap">
           <p className="section-kicker">{kicker}</p>
           <h1 className="section-title">{title}</h1>

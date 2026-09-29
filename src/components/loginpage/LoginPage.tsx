@@ -5,7 +5,7 @@ import {motion} from 'framer-motion';
 import {Link} from 'react-router-dom';
 import api from '../../api';
 
-type UserRole = 'office' | 'loader';
+type UserRole = 'Office' | 'Loader';
 type AuthTab= 'SignUp' | 'Login';
 
 
@@ -28,7 +28,7 @@ export function LoginPage() {
   
   };
 
-  const [role, setRole] = useState<UserRole>('office');
+  const [role, setRole] = useState<UserRole>('Office');
   const handleRole = (mode: UserRole) => {
     setRole(mode);
   };
@@ -60,7 +60,7 @@ export function LoginPage() {
     return;
   }
   if(password.length<6){
-    setError('Password must contain more than 6 characters.');
+    setError('Password must contain at least 6 characters.');
     return;
   }
   if(password !== checkpassword && activeTab==="SignUp"){
@@ -72,11 +72,9 @@ export function LoginPage() {
 
   
 
- try {
- 
-  let response;
-  if(activeTab==='SignUp'){
-    const signUpData={
+try {
+  if (activeTab === 'SignUp') {
+    const signUpData = {
       name,
       surname,
       email,
@@ -84,26 +82,46 @@ export function LoginPage() {
       role,
     };
 
-    response= await api.post('/data/signup', signUpData);
+    const response = await api.post('/data/signup', signUpData);
 
-  }
+    console.log('SignUp successful!');
+    console.log('SIGNUP RESPONSE:', response.data);
+
+    
+    setActiveTab('Login');
+    setPassword('');
+    setCheckPassword('');
+  } 
+  
   else {
-    const loginData={
+    const loginData = {
       email,
       password,
-     
     };
-    response=await api.post('/login', loginData);
 
+    const response = await api.post('/data/login', loginData);
+
+    console.log('Login successful!');
+    console.log('LOGIN RESPONSE:', response.data);
+
+    const { token, role: userRole } = response.data;
+
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userRole', userRole);
+
+    if (userRole === 'office') {
+      navigate('/');
+    } else if (userRole === 'loader') {
+      navigate('/account');
+    }
   }
-  const {token}=response.data;
-  localStorage.setItem('authToken',token);
-  console.log(`${activeTab} successful!`);
-  navigate('/'); }
-  catch(err:any){
-    const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
-    setError(serverErrorMessage);
- 
+} catch (err: any) {
+  const serverErrorMessage =
+    err.response?.data?.detail ||
+    err.response?.data?.message ||
+    'Something went wrong. Please try again.';
+
+  setError(serverErrorMessage);
 }
 finally{
   setIsLoading(false);
@@ -153,21 +171,24 @@ finally{
           </div>
 
           <div className="status">
+            {activeTab==='SignUp' && (
+              <>
             <button
               type="button"
-              className={role === 'office' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('office')}
+              className={role === 'Office' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Office')}
             >
               Office
             </button>
             <p>|</p>
             <button
               type="button"
-              className={role === 'loader' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('loader')}
+              className={role === 'Loader' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Loader')}
             >
               Loader
-            </button>
+            </button> 
+            </>)}
           </div>
          
           <div className="inputs">
@@ -249,7 +270,7 @@ finally{
 
           <button
             type="submit"
-            className="startbutton"
+            className="p-2 text-white w-[280px] ml-5 lg:ml-16 hover:bg-accent-hover bg-accent rounded-sm"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}

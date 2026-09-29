@@ -42,7 +42,7 @@ const GetPIN = () => {
         console.log('pin_ payload:', pin_);
         
         response=await api.post('/data/verify-pin' ,pin_);
-        navigate('/');
+        navigate('/data/reset-password');
 
       }
       catch(err:any){
@@ -60,9 +60,9 @@ const GetPIN = () => {
  
   
   return (
-   <div className="pt-[30px]">
+   <div className="md:pt-[30px] pb-0 ">
       <motion.div
-        className=" ml-20 grid grid-cols-2 w-[1200px] h-[600px] "
+        className=" ml-10  lg:ml-20 grid lg:grid-cols-2 lg:w-[1200px] lg:h-[600px] "
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.96 }}
@@ -70,8 +70,8 @@ const GetPIN = () => {
       >
         <div>
         <img
-          className="h-[500px] mt-10"
-          src="./forgotpass.png"
+          className="hidden lg:block lg:h-[500px] "
+          src="./download5.png"
           alt="forgot-password-image"
         />
         </div>
@@ -136,6 +136,7 @@ const GetPIN = () => {
             <button
               type="submit"
               className=" button-pin w-[280px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl"
+              onClick={()=> navigate('/reset-password')}
             >
               Verify PIN
             </button>

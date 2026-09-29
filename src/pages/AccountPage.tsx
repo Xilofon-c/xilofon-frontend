@@ -46,11 +46,11 @@ export function AccountPage() {
         <div className=' flex flex-row mt-5 gap-5'>
          
          <div>
-          <h3 className='bg-accent rounded-xl text-white p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>navigate('/logout')}>Log Me Out</a></h3>
+          <h3 className='bg-accent rounded-xl text-white p-1.5 lg:p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>navigate('/logout')}>Log Me Out</a></h3>
          </div>
 
          <div>
-          <h3 className='bg-accent rounded-xl text-white p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>setIsOpen(true)}>Remove my account</a></h3>
+          <h3 className='bg-accent rounded-xl text-white p-1.5 lg:p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>setIsOpen(true)}>Remove my account</a></h3>
          </div>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function AccountPage() {
             <div className='fixed bg-white/30 backdrop-blur-md inset-0 flex justify-center  items-center'
             onClick={()=>setIsOpen(false)}>
             
-              <div className='bg-white w-[500px] h-[350px] rounded-3xl border-3 mt-17 border-accent flex flex-col '
+              <div className='bg-white w-[500px] h-[350px] rounded-3xl border-3 lg:mt-17 border-accent flex flex-col '
               onClick={(e)=> e.stopPropagation()}>
                 <h1 className='text-3xl font-bold text-center mt-10'>Delete account?</h1>
                 <p className='pt-5 text-center text-xl'>You'll permanently lose <br></br> <u>profile</u> <br></br><u>history</u> <br></br><u>reports</u></p>

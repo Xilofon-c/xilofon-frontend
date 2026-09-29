@@ -10,13 +10,13 @@ export function ReportPage() {
   }
 
   return (
-    <AppScreen kicker="" title="Report">
+    <AppScreen kicker="" title="Report" >
       <p className="section-copy">
         Flag a problem with a shipment — damaged cargo, missing boxes, or a load that does not match
         the plan. The report goes to the supervisor.
       </p>
 
-      <form className="panel" style={{ marginTop: 24, padding: 24 }} onSubmit={onSubmit}>
+      <form className="panel" style={{ marginTop: 20, padding: 18 }} onSubmit={onSubmit}>
         <div className="field">
           <label htmlFor="report-shipment">Shipment or BOL</label>
           <input id="report-shipment" className="field-input" name="shipment" required />

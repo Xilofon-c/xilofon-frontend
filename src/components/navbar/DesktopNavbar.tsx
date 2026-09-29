@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarcodeIcon, BrandMark } from './NavIcons'
+import { BarcodeIcon } from './NavIcons'
 import { NAV_LINKS } from './navConfig'
 import {useNavigate} from 'react-router-dom'
 type DesktopNavbarProps = {
@@ -8,7 +8,9 @@ type DesktopNavbarProps = {
 
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
   const navigate=useNavigate();
+  
   const isLoggedIn=!!localStorage.getItem('authToken');
+  const userRole = localStorage.getItem('userRole');
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas/92 backdrop-blur-xl">
       <div className="h-[3px] bg-[linear-gradient(90deg,#490a67_0%,#81468d_52%,#490a67_100%)]" />
@@ -41,6 +43,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
         </nav>
 
         <div className="flex items-center gap-3">
+          {userRole==='office' &&(
           <NavLink
             to="/shipments/new"
             className={({ isActive }) =>
@@ -50,7 +53,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             }
           >
             Create
-          </NavLink>
+          </NavLink> )}
           <button
             type="button"
             onClick={onOpenScanner}
@@ -70,7 +73,7 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white">
               OP
             </span>
-            <span className="hidden text-[12px] font-semibold text-ink lg:inline">Office</span>
+            <span className="hidden text-[12px] font-semibold text-ink lg:inline">{userRole}</span>
           </Link>) :(
             <button
                 type="button"
