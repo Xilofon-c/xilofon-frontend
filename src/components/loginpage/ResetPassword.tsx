@@ -42,10 +42,10 @@ catch(err:any){
 };
 
   return (
-    <div className=" mt-40 lg:mt-5 pt-[30px] flex justify-center items-center "
+    <div className=" mt-70 lg:mt-5 pt-[30px] flex justify-center items-center "
     >
       <motion.div
-        className=" bg-white/80 backdrop-blur-md border border-white rounded-2xl shadow-lg lg:ml-20 w-[340px] h-[340px] lg:w-[500px] lg:h-[480px] "
+        className=" bg-white/80 backdrop-blur-md border mt-20 border-white rounded-2xl shadow-lg lg:ml-20 w-[340px] h-[340px] lg:w-[500px] lg:h-[480px] "
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.96 }}
