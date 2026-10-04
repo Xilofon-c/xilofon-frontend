@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { CargoImport } from '../components/shipment/CargoImport'
-import { CargoObjectList } from '../components/shipment/CargoObjectList'
+import  {CargoObjectList}  from '../components/shipment/CargoObjectList'
 import { LoadViewport } from '../components/shipment/LoadViewport'
 import { generateBolPdf } from '../lib/bolApi'
 import { cargoHasDimensions, cargoStats, createCargoItem, DEFAULT_TRAILER, newShipmentId, packCargo } from '../lib/cargo'
@@ -86,6 +86,18 @@ export function CreateShipmentPage() {
           tiltable: item.tiltable,
           stackable: item.stackable,
         })),
+        layout: packed
+          .filter((box) => box.fitted)
+          .map((box) => ({
+            id: box.item.id,
+            xCm: box.x * 100,
+            yCm: box.y * 100,
+            zCm: box.z * 100,
+            lengthCm: box.length * 100,
+            widthCm: box.width * 100,
+            heightCm: box.height * 100,
+            color: box.color,
+          })),
       })
     } catch (error) {
       setGenerateError(error instanceof Error ? error.message : 'Could not generate the BOL.')
