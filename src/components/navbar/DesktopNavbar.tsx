@@ -48,6 +48,8 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
 
           <div className="mx-2 h-6 w-px bg-line" aria-hidden="true" />
 
+          {isLoggedIn? (
+
           <Link
             to="/account"
             className="flex items-center gap-2 rounded-md py-1 pr-2 pl-1 transition-colors hover:bg-canvas-muted"

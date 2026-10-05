@@ -30,7 +30,7 @@ export function LoginPage() {
   
   };
 
-  const [role, setRole] = useState<UserRole>('office');
+  const [role, setRole] = useState<UserRole>('Office');
   const handleRole = (mode: UserRole) => {
     setRole(mode);
   };
@@ -159,16 +159,16 @@ finally{
               <>
             <button
               type="button"
-              className={role === 'office' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('office')}
+              className={role === 'Office' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Office')}
             >
               Office
             </button>
             <p>|</p>
             <button
               type="button"
-              className={role === 'loader' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('loader')}
+              className={role === 'Loader' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('Loader')}
             >
               Loader
             </button> 

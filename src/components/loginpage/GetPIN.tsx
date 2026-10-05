@@ -123,6 +123,21 @@ const GetPIN = () => {
     }
   };
 
+      }
+      catch(err:any){
+         console.log('error response:', err.response?.data);
+         const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
+    setError(serverErrorMessage);
+      }
+      finally{
+        setLoading(false);
+      
+
+    }
+  };
+
+ 
+  
   return (
     <div className="flex justify-center md:pt-[30px] pb-0 ">
       <motion.div

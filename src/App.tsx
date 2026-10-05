@@ -47,7 +47,10 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
       <Route element={<AppShell />}>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={
+          <OfficeRoute>
+          <HomePage />
+          </OfficeRoute>} />
         <Route path="/shipments" element={<ShipmentsPage />} />
         <Route path="/shipments/new" element={<CreateShipmentPage />} />
         <Route path="/report" element={<ReportPage />} />

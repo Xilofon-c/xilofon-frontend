@@ -5,6 +5,11 @@ import { fetchProfile, updateProfile, type Profile } from '../lib/accountApi'
 import { apiError } from '../lib/apiClient'
 import { initialsOf, isSignedIn, readSession, ROLE_LABEL } from '../lib/session'
 import { AppScreen } from './AppScreen'
+import {useNavigate} from 'react-router-dom';
+import {useState} from 'react';
+import api from '../api';
+
+
 
 type Status = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved' } | { kind: 'error'; message: string }
 
