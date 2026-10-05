@@ -12,7 +12,7 @@ const LogOut = () => {
    }
   return (
     <div className='flex justify-center items-center '>
-        <div className=' relative  -rotate-3 lg:w-[500px] lg:h-[500px] w-[350px] h-[350px] lg:mt-10 mt-40 bg-black rounded-xl flex '>
+        <div className=' relative  -rotate-3 lg:w-[500px] lg:h-[500px] w-[350px] h-[350px] md:mt-10 mt-40 bg-black rounded-xl flex '>
           <div className=' relative  -rotate-3 lg:w-[480px] lg:h-[480px] w-[320px] h-[320px]  bg-accent  rounded-xl flex '>
         
          <motion.div

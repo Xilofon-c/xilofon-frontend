@@ -23,6 +23,17 @@ export type BolGeneratePayload = {
     tiltable: boolean
     stackable: boolean
   }>
+  // Exactly where the 3D view put each box (cm). The PDF is drawn from this, so it matches the screen.
+  layout?: Array<{
+    id: string
+    xCm: number // along the trailer, 0 = cab end
+    yCm: number // height above the floor
+    zCm: number // across the trailer width
+    lengthCm: number
+    widthCm: number
+    heightCm: number
+    color: string
+  }>
 }
 
 function filenameFromDisposition(header: string | null, fallback: string) {
