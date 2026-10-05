@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Plus, X } from 'lucide-react'
 import { colorFor } from '../../lib/cargo'
 import type { CargoFlag, CargoItem } from '../../types'
@@ -11,6 +12,7 @@ type CargoObjectListProps = {
   onRemove: (id: string) => void
   onAdd: () => void
   onImported: (items: CargoItem[], fileName: string) => void
+  toolbar?: ReactNode
 }
 
 const FLAGS: { key: CargoFlag; label: string; hint: string }[] = [
@@ -60,6 +62,7 @@ export function CargoObjectList({
   onRemove,
   onAdd,
   onImported,
+  toolbar,
 }: CargoObjectListProps) {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
@@ -70,12 +73,15 @@ export function CargoObjectList({
             {items.length} {items.length === 1 ? 'object' : 'objects'}
           </p>
         </div>
-        <CargoImport onImported={onImported}>
-          <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Add
-          </button>
-        </CargoImport>
+        <div className="flex items-center gap-2">
+          <CargoImport onImported={onImported}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add
+            </button>
+          </CargoImport>
+          {toolbar}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto bg-canvas-muted px-3 py-3">

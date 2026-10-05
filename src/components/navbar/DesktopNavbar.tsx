@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { LogOut, Plus, ScanBarcode } from 'lucide-react'
-import { initialsOf, readSession, ROLE_LABEL } from '../../lib/session'
+import { initialsOf, isSignedIn, readSession, ROLE_LABEL } from '../../lib/session'
 import { isExactRoute, NAV_LINKS } from './navConfig'
 
 type DesktopNavbarProps = {
@@ -8,6 +8,7 @@ type DesktopNavbarProps = {
 }
 
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
+  const signedIn = isSignedIn()
   const session = readSession()
 
   return (
@@ -48,29 +49,35 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
 
           <div className="mx-2 h-6 w-px bg-line" aria-hidden="true" />
 
-          {isLoggedIn? (
-
-          <Link
-            to="/account"
-            className="flex items-center gap-2 rounded-md py-1 pr-2 pl-1 transition-colors hover:bg-canvas-muted"
-            aria-label={`Account: ${session.name}`}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white">
-              {initialsOf(session.name)}
-            </span>
-            <span className="hidden text-left lg:block">
-              <span className="block text-[13px] leading-4 font-semibold text-ink">{session.name}</span>
-              <span className="block text-[12px] leading-4 text-ink-faint">{ROLE_LABEL[session.role]}</span>
-            </span>
-          </Link>
-          <Link
-            to="/logout"
-            className="btn btn-quiet btn-sm px-2"
-            aria-label="Log out"
-            title="Log out"
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          {signedIn ? (
+            <>
+              <Link
+                to="/account"
+                className="flex items-center gap-2 rounded-md py-1 pr-2 pl-1 transition-colors hover:bg-canvas-muted"
+                aria-label={`Account: ${session.name}`}
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white">
+                  {initialsOf(session.name)}
+                </span>
+                <span className="hidden text-left lg:block">
+                  <span className="block text-[13px] leading-4 font-semibold text-ink">{session.name}</span>
+                  <span className="block text-[12px] leading-4 text-ink-faint">{ROLE_LABEL[session.role]}</span>
+                </span>
+              </Link>
+              <Link
+                to="/logout"
+                className="btn btn-quiet btn-sm px-2"
+                aria-label="Log out"
+                title="Log out"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </>
+          ) : (
+            <Link to="/login" className="btn btn-ghost btn-sm">
+              Log in
+            </Link>
+          )}
         </div>
       </div>
     </header>

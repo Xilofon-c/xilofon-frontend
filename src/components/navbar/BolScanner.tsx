@@ -63,7 +63,7 @@ export function BolScanner({ open, onClose }: BolScannerProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex flex-col bg-[#14081c]/95 text-white"
+      className="fixed inset-0 z-[70] flex flex-col bg-[#14081c] text-white"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -112,7 +112,7 @@ export function BolScanner({ open, onClose }: BolScannerProps) {
         </div>
 
         {error ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#14081c]/80 p-6 text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#14081c] p-6 text-center">
             <div>
               <p className="text-sm leading-6 text-white/85">{error}</p>
               <button

@@ -36,16 +36,14 @@
 .choice-container{
  display:flex;
  position:absolute;
- top: 30%;
-  right: -16%;
- z-index:2;
+ top: 50%;
+ right: 20px;
+ z-index: 4;
  border:none;
- transform: translate(-40%, -40%);
- margin-top:10px;
+ transform: translateY(-50%);
  flex-direction: column;
-  gap:25px;
+ gap: 16px;
  align-items: center;
-
 }
 .choice, 
 .choice-active {
@@ -160,8 +158,8 @@
 }
 .check-box{
   display:flex;
-
-  align-items: left;
+  align-items: center;
+  gap: 8px;
   margin-left:27px;
   margin-top:10px;
   cursor:pointer;

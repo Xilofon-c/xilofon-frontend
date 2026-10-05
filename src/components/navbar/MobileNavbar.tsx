@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { ScanBarcode, type LucideIcon } from 'lucide-react'
-import { initialsOf, readSession } from '../../lib/session'
+import { initialsOf, isSignedIn, readSession } from '../../lib/session'
 import { isExactRoute, MOBILE_EXTRA_LINK, NAV_LINKS } from './navConfig'
 
 type MobileNavbarProps = {
@@ -13,6 +13,7 @@ const PILL_MASK = {
 }
 
 export function MobileNavbar({ onOpenScanner }: MobileNavbarProps) {
+  const signedIn = isSignedIn()
   const session = readSession()
   const left = NAV_LINKS.slice(0, 2)
   const right = [...NAV_LINKS.slice(2), MOBILE_EXTRA_LINK]
@@ -23,13 +24,19 @@ export function MobileNavbar({ onOpenScanner }: MobileNavbarProps) {
         <Link to="/" aria-label="SmartCargo home">
           <img alt="SmartCargo" src="/logo.png" width={100} height={34} className="block h-8 w-auto" />
         </Link>
-        <Link
-          to="/account"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white"
-          aria-label={`Account: ${session.name}`}
-        >
-          {initialsOf(session.name)}
-        </Link>
+        {signedIn ? (
+          <Link
+            to="/account"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white"
+            aria-label={`Account: ${session.name}`}
+          >
+            {initialsOf(session.name)}
+          </Link>
+        ) : (
+          <Link to="/login" className="btn btn-ghost btn-sm">
+            Log in
+          </Link>
+        )}
       </header>
 
       <nav

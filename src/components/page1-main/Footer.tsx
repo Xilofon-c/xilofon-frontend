@@ -35,9 +35,6 @@ export function Footer({ withNav = false }: FooterProps) {
               <Link to="/shipments/new">New shipment</Link>
               <Link to="/shipments">Shipments</Link>
               <Link to="/report">Report a problem</Link>
-              <a href="#dims-title">Home</a>
-              <a href="#bol">Bill of lading</a>
-              <a href='#history'>Recent history</a>
             </nav>
           </div>
           <div>

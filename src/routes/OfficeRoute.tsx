@@ -1,14 +1,15 @@
-import {Navigate} from 'react-router-dom';
+import type { ReactNode } from 'react'
+import { Navigate } from 'react-router-dom'
+import { isSignedIn, readRole } from '../lib/session'
 
-type ProtectedRouteProps={
-    children: React.ReactNode;
-};
-const OfficeRoute=({children}: ProtectedRouteProps)=>{
-    const role=localStorage.getItem('userRole');
-    if(role!=='office'){
-        return <Navigate to ='/account' replace />;
-    }
-    return children;
-};
+type OfficeRouteProps = {
+  children: ReactNode
+}
 
-export default OfficeRoute;
+export default function OfficeRoute({ children }: OfficeRouteProps) {
+  // Guests can open the planner. A signed-in loader is sent to their account.
+  if (isSignedIn() && readRole() !== 'office') {
+    return <Navigate to="/account" replace />
+  }
+  return children
+}

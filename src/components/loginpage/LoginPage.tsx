@@ -30,7 +30,7 @@ export function LoginPage() {
   
   };
 
-  const [role, setRole] = useState<UserRole>('Office');
+  const [role, setRole] = useState<UserRole>('office');
   const handleRole = (mode: UserRole) => {
     setRole(mode);
   };
@@ -159,16 +159,16 @@ finally{
               <>
             <button
               type="button"
-              className={role === 'Office' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('Office')}
+              className={role === 'office' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('office')}
             >
               Office
             </button>
             <p>|</p>
             <button
               type="button"
-              className={role === 'Loader' ? 'active-status' : 'nonactive'}
-              onClick={() => handleRole('Loader')}
+              className={role === 'loader' ? 'active-status' : 'nonactive'}
+              onClick={() => handleRole('loader')}
             >
               Loader
             </button> 
@@ -245,7 +245,7 @@ finally{
           {activeTab === 'SignUp' ? (
             <label className="check-box">
               <input type="checkbox" required />
-              <span> I agree to the <a href="/terms">Terms & Conditions</a></span>
+              <span> I agree to the Terms & Conditions</span>
             </label>
           ) : (
             <div className="forgot-password">
@@ -260,9 +260,9 @@ finally{
             {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}
           </button>
 
-          <a className="back" onClick={() => navigate('/')}>
+          <Link to="/" className="back">
             ← Get back to home
-          </a>
+          </Link>
         </form>
        </motion.div>
     </div>

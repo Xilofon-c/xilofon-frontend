@@ -1,15 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { CircleCheck, LoaderCircle, LogOut } from 'lucide-react'
 import { fetchProfile, updateProfile, type Profile } from '../lib/accountApi'
 import { apiError } from '../lib/apiClient'
 import { initialsOf, isSignedIn, readSession, ROLE_LABEL } from '../lib/session'
 import { AppScreen } from './AppScreen'
-import {useNavigate} from 'react-router-dom';
-import {useState} from 'react';
-import api from '../api';
-
-
 
 type Status = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved' } | { kind: 'error'; message: string }
 
@@ -71,6 +66,23 @@ export function AccountPage() {
     }
   }
 
+  if (!isSignedIn()) {
+    return (
+      <AppScreen title="Account" narrow>
+        <div className="panel">
+          <div className="panel-body grid gap-4">
+            <p>You are not logged in. Log in to load and save your profile.</p>
+            <div>
+              <Link to="/login" className="btn btn-primary">
+                Log in
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppScreen>
+    )
+  }
+
   return (
     <AppScreen title="Account" narrow>
       <form className="panel" onSubmit={onSubmit} aria-busy={loading}>
@@ -87,11 +99,6 @@ export function AccountPage() {
           <span className="badge badge-neutral">{ROLE_LABEL[role]} user</span>
         </div>
         <div className="panel-body grid gap-5 sm:grid-cols-2">
-          {!isSignedIn() ? (
-            <p className="alert alert-danger sm:col-span-2" role="alert">
-              You are not logged in. Log in to load and save your profile.
-            </p>
-          ) : null}
           <div className="field">
             <label className="field-label" htmlFor="account-name">
               First name

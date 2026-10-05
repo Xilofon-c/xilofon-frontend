@@ -11,6 +11,7 @@ import GetPIN from './components/loginpage/GetPIN'
 import LogOut from './components/loginpage/LogOut'
 import ResetPassword from './components/loginpage/ResetPassword'
 import { Footer } from './components/page1-main/Footer'
+import OfficeRoute from './routes/OfficeRoute'
 
 function AppShell() {
   return (

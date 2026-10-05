@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { LoaderCircle, LogOut as LogOutIcon } from 'lucide-react'
-import { clearSession, readSession, ROLE_LABEL } from '../../lib/session'
+import { clearSession, isSignedIn, readSession, ROLE_LABEL } from '../../lib/session'
 
 const card = {
   hidden: { opacity: 0, y: 30, scale: 0.96 },
@@ -36,6 +36,8 @@ const LogOut = () => {
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (!isSignedIn()) return <Navigate to="/login" replace />
 
   return (
     <main id="main" className="flex justify-center items-center px-4 pb-16">
