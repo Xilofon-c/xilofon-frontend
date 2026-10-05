@@ -1,12 +1,18 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import './Footer.css'
 
-export function Footer() {
+type FooterProps = {
+  /** Adds space for the fixed mobile navigation bar. */
+  withNav?: boolean
+}
+
+export function Footer({ withNav = false }: FooterProps) {
   const year = new Date().getFullYear()
 
   return (
     <motion.footer
-      className="site-footer"
+      className={`site-footer${withNav ? ' site-footer--nav' : ''}`}
       id="contact"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
@@ -16,7 +22,7 @@ export function Footer() {
       <div className="wrap">
         <div className="footer-grid">
           <div>
-            <p className="footer-brand">Smart Cargo</p>
+            <img src="/logo.png" alt="Smart Cargo" className="footer-logo" width={118} height={40} />
             <p className="footer-tagline">
               Cargo arrangement for transport companies — vehicle size, bill of
               lading, and a clear load plan.
@@ -25,6 +31,10 @@ export function Footer() {
           <div>
             <p className="footer-heading">Platform</p>
             <nav className="footer-links" aria-label="Footer">
+              <Link to="/">Home</Link>
+              <Link to="/shipments/new">New shipment</Link>
+              <Link to="/shipments">Shipments</Link>
+              <Link to="/report">Report a problem</Link>
               <a href="#dims-title">Home</a>
               <a href="#bol">Bill of lading</a>
               <a href='#history'>Recent history</a>
@@ -33,8 +43,8 @@ export function Footer() {
           <div>
             <p className="footer-heading">Contact</p>
             <nav className="footer-links" aria-label="Contact">
-              <a href="mailto:ops@xilofon.io">ops@smartcargo.io</a>
-              <a href="mailto:support@xilofon.io">support@smartcargo.io</a>
+              <a href="mailto:ops@smartcargo.io">ops@smartcargo.io</a>
+              <a href="mailto:support@smartcargo.io">support@smartcargo.io</a>
             </nav>
           </div>
         </div>

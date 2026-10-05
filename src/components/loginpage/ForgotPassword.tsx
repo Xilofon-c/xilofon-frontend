@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
 
-import api from '../../api';
+import api, { apiError } from '../../api';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
@@ -32,14 +32,12 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      let response;
       const forgot_password={email,};
-      response= await api.post('/data/forgot-password', forgot_password);
+      await api.post('/data/forgot-password', forgot_password);
      
       navigate('/input-pin', { state: { email } }); }
-      catch(err:any){
-        const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
-    setError(serverErrorMessage);
+      catch(err){
+        setError(apiError(err, 'Something went wrong. Please try again.'));
       }
       finally{
   setLoading(false);
@@ -63,8 +61,8 @@ const ForgotPassword = () => {
 
         <form className="flex p-10" onSubmit={handleSubmit}>
           <div className="flex flex-col  items-start justify-start md:items-center md:justify-center ">
-            <h1 className="text-3xl font-bold text-accent">Forgot Password?</h1>
-            <p className="mt-5 text-m w-[270px]">
+            <h1 className="text-4xl font-bold text-accent">Forgot Password?</h1>
+            <p className="mt-5 text-lg w-[300px] md:w-[380px]">
               Enter your email address and we will send you a PIN code to confirm your identity.
             </p>
 
@@ -73,7 +71,7 @@ const ForgotPassword = () => {
               value={email}
               type="email"
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border-2 border-accent mt-10 p-3 w-[280px]"
+              className="rounded-xl border-2 border-accent mt-10 p-4 text-lg w-[300px] md:w-[380px]"
             />
 
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
@@ -82,7 +80,7 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-5 mr-4 button-pin w-[280px] h-[50px] bg-accent text-white flex items-center justify-center rounded-xl disabled:opacity-50 transition-opacity"
+                className="mt-5 mr-4 button-pin w-[300px] md:w-[380px] h-[56px] text-lg bg-accent text-white flex items-center justify-center rounded-xl disabled:opacity-50 transition-opacity"
               >
                 {loading ? 'Sending...' : 'Send PIN'}
               </button>

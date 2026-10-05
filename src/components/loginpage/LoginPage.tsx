@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import {motion} from 'framer-motion';
 import {Link} from 'react-router-dom';
-import api from '../../api';
+import api, { apiError } from '../../api';
+import { sessionFromProfile, type Profile } from '../../lib/accountApi';
+import { writeSession, type UserRole } from '../../lib/session';
 
-type UserRole = 'Office' | 'Loader';
+type LoginResponse = Profile & { access_token: string };
 type AuthTab= 'SignUp' | 'Login';
 
 
@@ -82,12 +84,9 @@ try {
       role,
     };
 
-    const response = await api.post('/data/signup', signUpData);
+    await api.post('/data/signup', signUpData);
 
-    console.log('SignUp successful!');
-    console.log('SIGNUP RESPONSE:', response.data);
 
-    
     setActiveTab('Login');
     setPassword('');
     setCheckPassword('');
@@ -99,29 +98,14 @@ try {
       password,
     };
 
-    const response = await api.post('/data/login', loginData);
+    const { data } = await api.post<LoginResponse>('/data/login', loginData);
 
-    console.log('Login successful!');
-    console.log('LOGIN RESPONSE:', response.data);
+    writeSession(sessionFromProfile(data), data.access_token);
 
-    const { token, role: userRole } = response.data;
-
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('userRole', userRole);
-
-    if (userRole === 'office') {
-      navigate('/');
-    } else if (userRole === 'loader') {
-      navigate('/account');
-    }
+    navigate(data.role === 'office' ? '/' : '/account');
   }
-} catch (err: any) {
-  const serverErrorMessage =
-    err.response?.data?.detail ||
-    err.response?.data?.message ||
-    'Something went wrong. Please try again.';
-
-  setError(serverErrorMessage);
+} catch (err) {
+  setError(apiError(err, 'Something went wrong. Please try again.'));
 }
 finally{
   setIsLoading(false);
@@ -270,7 +254,7 @@ finally{
 
           <button
             type="submit"
-            className="p-2 text-white w-[280px] ml-5 lg:ml-16 hover:bg-accent-hover bg-accent rounded-sm"
+            className="mx-auto w-full max-w-[380px] rounded-md bg-accent p-3.5 text-base font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : activeTab === 'Login' ? 'Log in' : 'Get started'}

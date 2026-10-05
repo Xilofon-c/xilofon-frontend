@@ -12,7 +12,7 @@ export function Header() {
     >
       <div className="wrap">
         <a className="brand" href="#hero" aria-label="Xilofon home">
-            <img  src="./logo.png"></img>
+            <img src="/logo.png" alt="SmartCargo" />
           
         </a>
         <nav className="nav" aria-label="Primary">

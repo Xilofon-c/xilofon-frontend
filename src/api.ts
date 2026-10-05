@@ -1,3 +1,4 @@
+export { api as default, apiError } from './lib/apiClient'
 import axios from 'axios';
 
 const api = axios.create({

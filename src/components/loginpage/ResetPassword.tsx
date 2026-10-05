@@ -1,8 +1,8 @@
 import React from 'react';
 import {motion} from 'framer-motion';
 import {useState} from 'react'
-import api from '../../api';
-import { useNavigate, useLocation } from 'react-router-dom';
+import api, { apiError } from '../../api';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 const ResetPassword = () => {
 
@@ -12,8 +12,9 @@ const ResetPassword = () => {
   const [password, setPassword]=useState('');
   const [error, setError]=useState<string | null>(null);
    const email = location.state?.email;
-   const pin_=location.state?.pin_;
+   const pin=location.state?.pin;
   const [loading, setLoading]=useState(false);
+  const [done, setDone]=useState(false);
   const handleResetPassword=async(e:React.FormEvent<HTMLFormElement>)=>{
     e.preventDefault();
     setError(null);
@@ -25,27 +26,25 @@ const ResetPassword = () => {
 
 try{
 setLoading(true);
-  let response;
-  const resetData={email, pin_, password};
-  response= await api.post('/data/reset-password', resetData);
-  navigate('/reset-password');
-  
+  await api.post('/data/reset-password', {email, pin, new_password: password});
+  setDone(true);
+  window.setTimeout(()=>navigate('/login'), 1500);
 }
-catch(err:any){
-   console.log('error response:', err.response?.data);
-         const serverErrorMessage = err.response?.data?.message || 'Something went wrong. Please try again.';
-               setError(serverErrorMessage);
+catch(err){
+  setError(apiError(err, 'Something went wrong. Please try again.'));
   }
   finally{
    setLoading(false);
   }
 };
 
+  if (!email || !pin) return <Navigate to="/forgot-password" replace />;
+
   return (
-    <div className=" mt-70 lg:mt-5 pt-[30px] flex justify-center items-center "
+    <div className=" mt-40 lg:mt-5 pt-[30px] flex justify-center items-center "
     >
       <motion.div
-        className=" bg-white/80 backdrop-blur-md border mt-20 border-white rounded-2xl shadow-lg lg:ml-20 w-[340px] h-[340px] lg:w-[500px] lg:h-[480px] "
+        className=" bg-white/80 backdrop-blur-md border border-white rounded-2xl shadow-lg lg:ml-20 w-[360px] min-h-[400px] pb-8 lg:w-[560px] lg:min-h-[520px] "
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.96 }}
@@ -56,7 +55,7 @@ catch(err:any){
         <form className=' flex flex-col pt-7 ml-10 lg:ml-20'
         onSubmit={handleResetPassword}>
           <h1 className=' text-xl lg:text-4xl font-bold text-accent'>Reset password</h1>
-          <div className='relative  mt-10 w-[270px] lg:w-[300px]'>
+          <div className='relative  mt-10 w-[280px] lg:w-[380px]'>
           <input className=' relative  p-4 border text-black text-lg lg:text-xl w-full border-accent border-sm rounded-sm'
           placeholder="Enter new password"
            value={password}
@@ -84,6 +83,11 @@ catch(err:any){
             <p className={/[0-9]/.test(password) ? "text-green-600 text-md" : "text-gray-400 text-md"}>
                ✓ At least one number
            </p>
+             {done && (
+             <p className="text-green-600 mt-2 text-md" role="status">
+                  Password updated. Log in with the new password.
+               </p>
+               )}
              {error && (
              <p className="text-red-600 mt-2 text-md">
                   {error}
@@ -91,8 +95,8 @@ catch(err:any){
                )}
             </div>
             <div className=' mt-10 lg:mt-10 flex gap-6 text-lg lg:text-xl '>
-            <button onClick={()=> navigate('/login')} className='p-1.5 lg:p-3 bg-accent  text-white  rounded-xl hover:bg-accent-hover'>Cancel</button>
-            <button type='submit' className='p-1.5 lg:p-3 bg-accent text-white  rounded-xl hover:bg-accent-hover'>Confirm</button>
+            <button type='button' onClick={()=> navigate('/login')} className='p-1.5 lg:p-3 bg-accent  text-white  rounded-xl hover:bg-accent-hover'>Cancel</button>
+            <button type='submit' disabled={loading || done} className='p-1.5 lg:p-3 bg-accent text-white  rounded-xl hover:bg-accent-hover disabled:opacity-60'>{loading ? 'Saving...' : 'Confirm'}</button>
             </div>
           
        

@@ -33,6 +33,22 @@ export type TrailerInterior = {
   height: number
 }
 
+/** Interior in metres plus payload in kg; `units` only records how the user entered it. */
+export type TrailerSpec = TrailerInterior & {
+  maxWeightKg: number | null
+  units: UnitSystem
+}
+
+/** Oriented extents and min-corner position in metres: x along trailer length, y up, z across width. */
+export type CargoPlacement = {
+  x: number
+  y: number
+  z: number
+  length: number
+  width: number
+  height: number
+}
+
 export type PackedBox = {
   item: CargoItem
   x: number

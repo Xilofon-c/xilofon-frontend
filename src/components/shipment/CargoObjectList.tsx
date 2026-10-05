@@ -1,4 +1,7 @@
+import { Plus, X } from 'lucide-react'
+import { colorFor } from '../../lib/cargo'
 import type { CargoFlag, CargoItem } from '../../types'
+import { CargoImport } from './CargoImport'
 
 type CargoObjectListProps = {
   items: CargoItem[]
@@ -7,6 +10,7 @@ type CargoObjectListProps = {
   onChange: (id: string, patch: Partial<CargoItem>) => void
   onRemove: (id: string) => void
   onAdd: () => void
+  onImported: (items: CargoItem[], fileName: string) => void
 }
 
 const FLAGS: { key: CargoFlag; label: string; hint: string }[] = [
@@ -29,21 +33,22 @@ function DimField({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="block min-w-0">
-      <span className="mb-1 block text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{label}</span>
-      <span className="relative block">
+    <div className="min-w-0">
+      <label htmlFor={id} className="mb-1 block text-[12px] font-medium text-ink-faint">
+        {label}
+      </label>
+      <span className="input-suffix block">
         <input
           id={id}
-          className="field-input min-h-10 px-2.5 pr-9 text-[13px]"
+          className="field-input min-h-9 px-2.5 pr-9 text-[13px] tabular-nums"
           inputMode="decimal"
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onClick={(event) => event.stopPropagation()}
         />
-        <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-ink-faint">
-          {suffix}
-        </span>
+        <span className="suffix right-2.5 text-[11px]">{suffix}</span>
       </span>
-    </label>
+    </div>
   )
 }
 
@@ -54,66 +59,74 @@ export function CargoObjectList({
   onChange,
   onRemove,
   onAdd,
+  onImported,
 }: CargoObjectListProps) {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+      <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.08em] text-accent uppercase">Objects</p>
-          <p className="text-[13px] text-ink-muted">{items.length} in this shipment</p>
+          <h2 className="text-[14px] font-semibold">Cargo</h2>
+          <p className="text-[13px] text-ink-faint">
+            {items.length} {items.length === 1 ? 'object' : 'objects'}
+          </p>
         </div>
-        <button type="button" className="btn btn-ghost min-h-9 px-3 text-[13px]" onClick={onAdd}>
-          Add
-        </button>
+        <CargoImport onImported={onImported}>
+          <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Add
+          </button>
+        </CargoImport>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-canvas-muted px-3 py-3">
         {items.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-line-strong bg-canvas-muted px-4 py-8 text-center text-[13px] text-ink-muted">
-            No cargo yet. Add an object or import a BOL / spreadsheet below.
-          </p>
+          <div className="empty-state rounded-[var(--radius)] border border-dashed border-line-strong bg-canvas">
+            <strong>No cargo yet</strong>
+            Add an object, or import a BOL or spreadsheet.
+          </div>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-2">
             {items.map((item, index) => {
               const selected = item.id === selectedId
               return (
                 <li key={item.id}>
                   <article
-                    className={`rounded-xl border bg-canvas p-3 shadow-[0_1px_2px_rgba(24,24,27,0.04)] transition ${
-                      selected ? 'border-accent ring-2 ring-[rgba(73,10,103,0.12)]' : 'border-line'
+                    className={`rounded-[var(--radius)] border bg-canvas p-3 transition-colors ${
+                      selected ? 'border-accent shadow-[0_0_0_3px_rgba(73,10,103,0.12)]' : 'border-line hover:border-line-strong'
                     }`}
                     onClick={() => onSelect(item.id)}
+                    aria-current={selected ? 'true' : undefined}
                   >
-                    <div className="mb-2 flex items-center gap-2">
+                    <div className="mb-2.5 flex items-center gap-2">
                       <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: item.fragile ? '#c2410c' : item.tiltable ? '#0369a1' : '#81468d' }}
+                        className="h-3 w-3 shrink-0 rounded-sm"
+                        style={{ background: colorFor(item) }}
                         aria-hidden="true"
                       />
                       <label className="min-w-0 flex-1">
                         <span className="visually-hidden">Object name</span>
                         <input
-                          className="w-full min-w-0 border-0 bg-transparent text-[14px] font-semibold text-ink outline-none"
+                          className="-mx-1 w-full min-w-0 rounded border-0 bg-transparent px-1 py-0.5 text-[14px] font-semibold text-ink outline-none hover:bg-canvas-muted focus:bg-canvas-muted focus-visible:outline-2 focus-visible:outline-accent"
                           value={item.name}
                           onChange={(event) => onChange(item.id, { name: event.target.value })}
                           onClick={(event) => event.stopPropagation()}
                         />
                       </label>
-                      <span className="text-[11px] text-ink-faint">#{index + 1}</span>
+                      <span className="mono text-[12px] text-ink-faint">#{index + 1}</span>
                       <button
                         type="button"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-faint transition hover:bg-canvas-muted hover:text-danger"
+                        className="grid h-7 w-7 place-items-center rounded text-ink-faint transition-colors hover:bg-danger-soft hover:text-danger"
                         aria-label={`Remove ${item.name}`}
                         onClick={(event) => {
                           event.stopPropagation()
                           onRemove(item.id)
                         }}
                       >
-                        ×
+                        <X className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       <DimField
                         id={`${item.id}-l`}
                         label="Length"
@@ -144,7 +157,7 @@ export function CargoObjectList({
                       />
                     </div>
 
-                    <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Handling flags">
+                    <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Handling">
                       {FLAGS.map((flag) => {
                         const pressed = item[flag.key]
                         return (
@@ -153,16 +166,17 @@ export function CargoObjectList({
                             type="button"
                             title={flag.hint}
                             aria-pressed={pressed}
-                            className={`min-h-8 rounded-full border px-2.5 text-[11px] font-semibold tracking-wide uppercase transition ${
+                            className={`min-h-7 rounded border px-2 text-[12px] font-medium transition-colors ${
                               pressed
-                                ? 'border-accent bg-accent text-white'
-                                : 'border-line-strong bg-canvas-muted text-ink-muted hover:border-accent hover:text-accent'
+                                ? 'border-accent-line bg-accent-soft text-accent'
+                                : 'border-line bg-canvas text-ink-faint hover:border-line-strong hover:text-ink'
                             }`}
                             onClick={(event) => {
                               event.stopPropagation()
                               onChange(item.id, { [flag.key]: !pressed })
                             }}
                           >
+                            {pressed ? '✓ ' : ''}
                             {flag.label}
                           </button>
                         )

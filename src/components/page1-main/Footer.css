@@ -3,7 +3,7 @@
   z-index: 1;
   border-top: 1px solid var(--line);
   background: var(--bg-muted);
-  padding: 56px 0 28px;
+  padding: 48px 0 28px;
 }
 
 .footer-grid {
@@ -11,6 +11,12 @@
   grid-template-columns: 1.4fr 1fr 1fr;
   gap: 36px;
   padding-bottom: 36px;
+}
+
+.footer-logo {
+  display: block;
+  height: 36px;
+  width: auto;
 }
 
 .footer-brand {
@@ -59,6 +65,13 @@
   border-top: 1px solid var(--line);
   color: var(--faint);
   font-size: 13px;
+}
+
+/* Keeps the last row above the fixed mobile navigation bar. */
+@media (max-width: 719px) {
+  .site-footer--nav {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 800px) {

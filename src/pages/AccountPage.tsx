@@ -1,3 +1,9 @@
+import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { CircleCheck, LoaderCircle, LogOut } from 'lucide-react'
+import { fetchProfile, updateProfile, type Profile } from '../lib/accountApi'
+import { apiError } from '../lib/apiClient'
+import { initialsOf, isSignedIn, readSession, ROLE_LABEL } from '../lib/session'
 import { AppScreen } from './AppScreen'
 import {useNavigate} from 'react-router-dom';
 import {useState} from 'react';
@@ -5,81 +11,150 @@ import api from '../api';
 
 
 
+type Status = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved' } | { kind: 'error'; message: string }
+
 export function AccountPage() {
-  const navigate=useNavigate();
-  const[isDeleted, setIsDeleted]=useState(false);
-  const [isOpen, setIsOpen]=useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const [session] = useState(readSession)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
+  const [loading, setLoading] = useState(isSignedIn)
+  const [status, setStatus] = useState<Status>({ kind: 'idle' })
 
-
-  const handleIsDeleted=async ()=>{
-    setIsDeleted(true);
-    setError(null);
-    try{
-      await api.delete('/account');//-----TO BE CHANGED-----
-      localStorage.removeItem('authToken');
-      navigate('/',{replace:true});
+  useEffect(() => {
+    if (!isSignedIn()) return
+    let active = true
+    fetchProfile()
+      .then((data) => {
+        if (!active) return
+        setProfile(data)
+        setName(data.name)
+        setSurname(data.surname)
+      })
+      .catch((error) => {
+        if (active) setStatus({ kind: 'error', message: apiError(error, 'Could not load your profile.') })
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
     }
-    catch(err){
-      console.log('Deleting failde', err);
-      setError('Something went wrong. Please try again.');
+  }, [])
+
+  const fullName = `${name} ${surname}`.trim() || session.name
+  const email = profile?.email ?? session.email
+  const role = profile?.role ?? session.role
+  const dirty = profile !== null && (name.trim() !== profile.name || surname.trim() !== profile.surname)
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (!name.trim() || !surname.trim()) {
+      setStatus({ kind: 'error', message: 'Enter your first name and surname.' })
+      return
+    }
+    setStatus({ kind: 'saving' })
+    try {
+      const next = await updateProfile({ name: name.trim(), surname: surname.trim() })
+      setProfile(next)
+      setStatus({ kind: 'saved' })
+    } catch (error) {
+      setStatus({ kind: 'error', message: apiError(error, 'Could not save your profile.') })
+    }
   }
-  finally{
-    setIsDeleted(false);
+
+  function edit(setter: (value: string) => void) {
+    return (value: string) => {
+      setter(value)
+      if (status.kind !== 'saving') setStatus({ kind: 'idle' })
+    }
   }
-};
 
   return (
-    <AppScreen kicker='' title="Account">
-      <p className="section-copy">
-        Office and loading users manage their profile, role, and yard access here.
-      </p>
-      <div className="panel" style={{ marginTop: 24, padding: 24 }}>
-        <div className="field">
-          <label htmlFor="account-name">Name</label>
-          <input id="account-name" className="field-input" defaultValue="Operations user" readOnly />
-        </div>
-        <div className="field" style={{ marginTop: 16 }}>
-          <label htmlFor="account-role">Role</label>
-          <input id="account-role" className="field-input" defaultValue="Office" readOnly />
-        </div>
-        <div className=' flex flex-row mt-5 gap-5'>
-         
-         <div>
-          <h3 className='bg-accent rounded-xl text-white p-1.5 lg:p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>navigate('/logout')}>Log Me Out</a></h3>
-         </div>
-
-         <div>
-          <h3 className='bg-accent rounded-xl text-white p-1.5 lg:p-3 hover:bg-accent-hover cursor-pointer'><a onClick={()=>setIsOpen(true)}>Remove my account</a></h3>
-         </div>
-        </div>
-      </div>
-      
-            {isOpen &&(
-            <div className='fixed bg-white/30 backdrop-blur-md inset-0 flex justify-center  items-center'
-            onClick={()=>setIsOpen(false)}>
-            
-              <div className='bg-white w-[500px] h-[350px] rounded-3xl border-3 lg:mt-17 border-accent flex flex-col '
-              onClick={(e)=> e.stopPropagation()}>
-                <h1 className='text-3xl font-bold text-center mt-10'>Delete account?</h1>
-                <p className='pt-5 text-center text-xl'>You'll permanently lose <br></br> <u>profile</u> <br></br><u>history</u> <br></br><u>reports</u></p>
-                  <p className="text-red-500 h-1 text-center ">
-                    {error ??''}
-                  </p>
-                 
-                <div className='bg-accent p-5 flex-1 mt-10 rounded-b-2xl flex justify-around items-center'>
-                <button onClick={()=> setIsOpen(false)} className='rounded-xl p-3 w-[150px] bg-white text-xl font-bold text-black '>Cancel</button> 
-                  <button className='rounded-xl p-3  w-[150px] bg-white text-black'
-                  onClick={()=>handleIsDeleted()}
-                     disabled={isDeleted}>
-                     {isDeleted ? 'Deleting…' : 'Confirm'}
-                  </button>
-                 
-                </div>
-                 </div>
+    <AppScreen title="Account" narrow>
+      <form className="panel" onSubmit={onSubmit} aria-busy={loading}>
+        <div className="panel-header">
+          <div className="flex items-center gap-4">
+            <span className="grid h-14 w-14 place-items-center rounded-full bg-accent text-[16px] font-semibold text-white">
+              {initialsOf(fullName)}
+            </span>
+            <div>
+              <p className="text-[18px] font-semibold tracking-tight">{fullName}</p>
+              <p className="panel-subtitle">{email}</p>
             </div>
-          )}
-
+          </div>
+          <span className="badge badge-neutral">{ROLE_LABEL[role]} user</span>
+        </div>
+        <div className="panel-body grid gap-5 sm:grid-cols-2">
+          {!isSignedIn() ? (
+            <p className="alert alert-danger sm:col-span-2" role="alert">
+              You are not logged in. Log in to load and save your profile.
+            </p>
+          ) : null}
+          <div className="field">
+            <label className="field-label" htmlFor="account-name">
+              First name
+            </label>
+            <input
+              id="account-name"
+              className="field-input"
+              value={name}
+              autoComplete="given-name"
+              disabled={loading || !profile}
+              placeholder={loading ? 'Loading…' : ''}
+              onChange={(event) => edit(setName)(event.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="account-surname">
+              Surname
+            </label>
+            <input
+              id="account-surname"
+              className="field-input"
+              value={surname}
+              autoComplete="family-name"
+              disabled={loading || !profile}
+              placeholder={loading ? 'Loading…' : ''}
+              onChange={(event) => edit(setSurname)(event.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="account-email">
+              Email
+            </label>
+            <input id="account-email" className="field-input" value={email} readOnly />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="account-role">
+              Role
+            </label>
+            <input id="account-role" className="field-input" value={ROLE_LABEL[role]} readOnly />
+          </div>
+          {status.kind === 'saved' ? (
+            <p className="alert alert-ok flex items-center gap-2 sm:col-span-2" role="status">
+              <CircleCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Profile saved.
+            </p>
+          ) : null}
+          {status.kind === 'error' ? (
+            <p className="alert alert-danger sm:col-span-2" role="alert">
+              {status.message}
+            </p>
+          ) : null}
+        </div>
+        <div className="panel-footer justify-between">
+          <button type="button" className="btn btn-quiet" onClick={() => navigate('/logout')}>
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Log out
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={!dirty || status.kind === 'saving'}>
+            {status.kind === 'saving' ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+            {status.kind === 'saving' ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </form>
     </AppScreen>
   )
 }

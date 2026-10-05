@@ -1,93 +1,84 @@
-import { NavLink } from 'react-router-dom'
-import {
-  AccountIcon,
-  BarcodeIcon,
-  HomeIcon,
-  ReportIcon,
-  ShipmentsIcon,
-} from './NavIcons'
-import { NAV_LINKS } from './navConfig'
+import { Link, NavLink } from 'react-router-dom'
+import { ScanBarcode, type LucideIcon } from 'lucide-react'
+import { initialsOf, readSession } from '../../lib/session'
+import { isExactRoute, MOBILE_EXTRA_LINK, NAV_LINKS } from './navConfig'
 
 type MobileNavbarProps = {
   onOpenScanner: () => void
 }
 
-const MOBILE_ICONS = [HomeIcon, ShipmentsIcon, ReportIcon, AccountIcon] as const
-
 const PILL_MASK = {
-  WebkitMaskImage: 'radial-gradient(circle at 50% 0, transparent 38px, #000 39px)',
-  maskImage: 'radial-gradient(circle at 50% 0, transparent 38px, #000 39px)',
+  WebkitMaskImage: 'radial-gradient(circle at 50% 0, transparent 36px, #000 37px)',
+  maskImage: 'radial-gradient(circle at 50% 0, transparent 36px, #000 37px)',
 }
 
 export function MobileNavbar({ onOpenScanner }: MobileNavbarProps) {
+  const session = readSession()
   const left = NAV_LINKS.slice(0, 2)
-  const right = NAV_LINKS.slice(2)
+  const right = [...NAV_LINKS.slice(2), MOBILE_EXTRA_LINK]
 
   return (
-    <nav
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.7rem,env(safe-area-inset-bottom))]"
-      aria-label="Primary"
-    >
-      <div className="relative mx-auto max-w-lg">
-        <div className="relative z-0 [filter:drop-shadow(0_12px_24px_rgba(24,24,27,0.16))]">
-          <div className="rounded-[2rem] bg-canvas" style={PILL_MASK}>
-            <div className="grid h-[4.4rem] grid-cols-5 items-center px-1.5">
-              {left.map((item, index) => (
-                <MobileNavLink
-                  key={item.to}
-                  to={item.to}
-                  label={item.label}
-                  icon={MOBILE_ICONS[index]}
-                />
-              ))}
+    <>
+      <header className="sticky top-0 z-50 flex h-[var(--header-h)] items-center justify-between border-b border-line bg-canvas px-4">
+        <Link to="/" aria-label="SmartCargo home">
+          <img alt="SmartCargo" src="/logo.png" width={100} height={34} className="block h-8 w-auto" />
+        </Link>
+        <Link
+          to="/account"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-[12px] font-semibold text-white"
+          aria-label={`Account: ${session.name}`}
+        >
+          {initialsOf(session.name)}
+        </Link>
+      </header>
 
-              <div aria-hidden="true" />
-
-              {right.map((item, index) => (
-                <MobileNavLink
-                  key={item.to}
-                  to={item.to}
-                  label={item.label}
-                  icon={MOBILE_ICONS[index + 2]}
-                />
-              ))}
+      <nav
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.6rem,env(safe-area-inset-bottom))]"
+        aria-label="Primary"
+      >
+        <div className="relative mx-auto max-w-lg">
+          <div className="relative z-0 [filter:drop-shadow(0_6px_16px_rgba(24,24,27,0.14))]">
+            <div className="rounded-2xl border border-line bg-canvas" style={PILL_MASK}>
+              <div className="grid h-16 grid-cols-5 items-center px-1">
+                {left.map((item) => (
+                  <MobileNavLink key={item.to} to={item.to} label={item.label} icon={item.icon} />
+                ))}
+                <span className="pt-7 text-center text-[11px] font-medium text-ink-muted" aria-hidden="true">
+                  Scan
+                </span>
+                {right.map((item) => (
+                  <MobileNavLink key={item.to} to={item.to} label={item.label} icon={item.icon} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <button
-          type="button"
-          onClick={onOpenScanner}
-          className="pointer-events-auto absolute top-0 left-1/2 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_20px_rgba(73,10,103,0.35)] transition duration-200 [-webkit-tap-highlight-color:transparent] hover:bg-accent-hover active:scale-95"
-          aria-label="Open BOL barcode scanner"
-        >
-          <BarcodeIcon className="h-[1.35rem] w-[1.35rem]" />
-        </button>
-      </div>
-    </nav>
+          <button
+            type="button"
+            onClick={onOpenScanner}
+            className="pointer-events-auto absolute top-0 left-1/2 z-10 flex h-13 w-13 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-white shadow-[0_6px_16px_rgba(73,10,103,0.3)] transition [-webkit-tap-highlight-color:transparent] hover:bg-accent-hover active:scale-95"
+            aria-label="Scan BOL barcode"
+          >
+            <ScanBarcode className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      </nav>
+    </>
   )
 }
 
-function MobileNavLink({
-  to,
-  label,
-  icon: Icon,
-}: {
-  to: string
-  label: string
-  icon: typeof HomeIcon
-}) {
+function MobileNavLink({ to, label, icon: Icon }: { to: string; label: string; icon: LucideIcon }) {
   return (
     <NavLink
       to={to}
-      end={to === '/' || to === '/shipments'}
+      end={isExactRoute(to)}
       className={({ isActive }) =>
-        `pointer-events-auto flex min-h-11 flex-col items-center justify-center gap-1 transition ${
-          isActive ? 'text-ink' : 'text-[#9a9aa3] hover:text-ink-muted'
+        `pointer-events-auto flex min-h-11 flex-col items-center justify-center gap-1 transition-colors ${
+          isActive ? 'text-accent' : 'text-ink-faint hover:text-ink'
         }`
       }
     >
-      <Icon className="h-[1.35rem] w-[1.35rem]" />
+      <Icon className="h-5 w-5" aria-hidden="true" strokeWidth={1.8} />
       <span className="text-[11px] leading-none font-medium">{label}</span>
     </NavLink>
   )
