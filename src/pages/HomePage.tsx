@@ -11,7 +11,7 @@ import { SHIPMENTS } from '../lib/shipments'
 import type { NewShipmentState } from '../lib/trailer'
 import { AppScreen } from './AppScreen'
 
-/** The splash plays once per page load, not on every return to Home. */
+
 let splashShown = false
 
 const avgVolume = Math.round(SHIPMENTS.reduce((sum, row) => sum + row.volume, 0) / SHIPMENTS.length)
@@ -72,9 +72,7 @@ export function HomePage() {
         <section className="panel mb-6" aria-labelledby="plan-title">
           <div className="panel-header">
             <div>
-              <p className="text-[12px] font-semibold tracking-[0.06em] text-ink-faint uppercase" id="plan-title">
-                Plan a new load
-              </p>
+             
               <h2 className="mt-1 text-[26px] leading-tight font-bold tracking-tight text-accent sm:text-[30px]">
                 Enter the vehicle size
               </h2>

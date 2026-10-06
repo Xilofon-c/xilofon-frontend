@@ -102,7 +102,7 @@ export function ReportPage() {
   return (
     <AppScreen title="Report a problem">
       <header className="mb-6">
-        <p className="text-[12px] font-semibold tracking-[0.06em] text-ink-faint uppercase">Loading bay</p>
+        
         <h2 className="mt-1 text-[26px] leading-tight font-bold tracking-tight text-accent sm:text-[30px]">
           Report a problem
         </h2>

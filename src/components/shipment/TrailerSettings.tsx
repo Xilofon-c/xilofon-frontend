@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react'
-import { Pencil } from 'lucide-react'
+import { Container, Pencil, Trailer, Truck } from 'lucide-react'
 import { useTrailerForm } from '../../hooks/useTrailerForm'
 import { formatPayload, formatTrailer } from '../../lib/trailer'
 import { hasPresetSize, TRAILER_TYPES, trailerTypeById } from '../../lib/trailerTypes'
 import type { TrailerSpec } from '../../types'
 import { TrailerDimensionsForm } from '../page1-main/TrailerDimensions'
+
+
+
 
 type TrailerSettingsProps = {
   trailer: TrailerSpec
@@ -14,38 +17,85 @@ type TrailerSettingsProps = {
   onTypeChange: (typeId: string, trailer: TrailerSpec) => void
 }
 
+
+    const TrailerIcon = ({ typeId }: { typeId: string }) => {
+  if (typeId === 'container-40' || typeId === 'container-20') {
+    return <Container size={24} strokeWidth={1.7} />
+  }
+
+  if (typeId === 'curtainsider' || typeId === 'mega') {
+    return <Trailer size={24} strokeWidth={1.7} />
+  }
+
+  return <Truck size={24} strokeWidth={1.7} />
+}
+
 export function TrailerSettings({ trailer, typeId, onChange, onTypeChange }: TrailerSettingsProps) {
-  const [editing, setEditing] = useState(false)
+ const [editing, setEditing] = useState(false)
+const [typeOpen, setTypeOpen] = useState(false)
   const form = useTrailerForm(trailer)
   const payload = formatPayload(trailer)
   const type = trailerTypeById(typeId)
   const customSize = !hasPresetSize(type, trailer)
 
-  const typeSelect = (
-    <div className="field mb-3">
-      <label className="text-[12px] font-medium text-ink-faint" htmlFor="trailer-type">
-        Trailer type
-      </label>
-      <select
-        id="trailer-type"
-        className="field-input min-h-10 text-[14px]"
-        value={typeId}
-        onChange={(event) => {
-          const next = trailerTypeById(event.target.value)
-          onTypeChange(next.id, { ...next.spec, units: trailer.units })
-          setEditing(false)
-        }}
-      >
-        {TRAILER_TYPES.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {customSize ? <p className="field-hint">Custom size. Select the type again to restore its size.</p> : null}
-    </div>
-  )
+ 
 
+
+   const typeSelect = (
+  <div className="field relative mb-3">
+    <label
+      className="text-[12px] font-medium text-ink-faint"
+      htmlFor="trailer-type"
+    >
+      Trailer type
+    </label>
+
+    <button
+      id="trailer-type"
+      type="button"
+      className="field-input flex min-h-10 w-full items-center justify-between text-[14px]"
+      onClick={() => setTypeOpen((open) => !open)}
+    >
+      <span>{type.label}</span>
+
+      <TrailerIcon typeId={type.id} />
+    </button>
+
+    {typeOpen ? (
+      <div className="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-md border border-line bg-white shadow-lg">
+        {TRAILER_TYPES.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            className="flex w-full items-center justify-between px-3 py-2.5 text-left text-[14px] hover:bg-canvas-muted"
+            onClick={() => {
+              const next = trailerTypeById(option.id)
+
+              onTypeChange(next.id, {
+                ...next.spec,
+                units: trailer.units,
+              })
+
+              setEditing(false)
+              setTypeOpen(false)
+            }}
+          >
+            <span>{option.label}</span>
+
+            <TrailerIcon typeId={option.id} />
+          </button>
+        ))}
+      </div>
+    ) : null}
+
+    {customSize ? (
+      <p className="field-hint">
+        Custom size. Select the type again to restore its size.
+      </p>
+    ) : null}
+  </div>
+)
+  
   function startEditing() {
     form.reset(trailer)
     setEditing(true)

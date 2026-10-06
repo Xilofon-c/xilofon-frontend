@@ -1,5 +1,6 @@
 import type { TrailerSpec } from '../types'
 import { DEFAULT_TRAILER } from './cargo'
+import { Container, Trailer, Truck } from 'lucide-react'
 
 /**
  * Measured cargo box of a GLB after its baked Y-up transform.
@@ -31,6 +32,7 @@ export type TrailerType = {
   spec: Omit<TrailerSpec, 'units'>
   /** Until a type has its own GLB, it reuses the long truck, scaled to its length. */
   model: TrailerModel
+
 }
 
 export const TRAILER_TYPES: TrailerType[] = [
