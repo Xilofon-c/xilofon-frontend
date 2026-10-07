@@ -1,12 +1,15 @@
-import { Suspense, useLayoutEffect } from 'react'
+import { Suspense, useMemo } from 'react'
 import { Clone, ContactShadows, Grid, OrbitControls, Outlines, useGLTF } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { DoubleSide, Mesh, MeshStandardMaterial } from 'three'
 import { DEFAULT_TRAILER } from '../../lib/cargo'
-import { DEFAULT_TRAILER_TYPE, TRAILER_TYPES, type TrailerModel } from '../../lib/trailerTypes'
+import { TRAILER_TYPES, type TrailerModel } from '../../lib/trailerTypes'
 import type { PackedBox, TrailerInterior } from '../../types'
+import { CargoContainer, CONTAINER_FLOOR } from './CargoContainer'
 
-for (const url of new Set(TRAILER_TYPES.map((type) => type.model.url))) useGLTF.preload(url)
+for (const type of TRAILER_TYPES) {
+  if (type.model) useGLTF.preload(type.model.url)
+}
 
 type LoadViewportProps = {
   packed: PackedBox[]
@@ -20,8 +23,8 @@ type LoadViewportProps = {
     fillPercent: number
   }
   trailer?: TrailerInterior
-  /** The 3D model for the selected trailer type. */
-  model?: TrailerModel
+  /** The selected type's mesh. Null draws a container sized to `trailer`. */
+  model?: TrailerModel | null
   /** Marks the weight total red when the cargo is heavier than this. */
   maxWeightKg?: number | null
   className?: string
@@ -44,44 +47,36 @@ function Stat({ label, value, danger = false }: { label: string; value: string |
   )
 }
 
-function truckScale(trailer: TrailerInterior, model: TrailerModel) {
-  return trailer.length / model.cargoLength
+function isTrailerShell(mesh: Mesh) {
+  const materialName = Array.isArray(mesh.material) ? mesh.material.map((material) => material.name).join(' ') : mesh.material.name
+  return /backside/i.test(mesh.name) || /backside/i.test(materialName)
 }
 
-function deckHeight(trailer: TrailerInterior, model: TrailerModel) {
-  return truckScale(trailer, model) * (model.floorY - model.groundY)
-}
-
-function isTrailerShell(mesh: Mesh, material: MeshStandardMaterial) {
-  const meshName = mesh.name
-  const materialName = material.name
-  return /backside/i.test(meshName) || /backside/i.test(materialName)
-}
-
-function TruckModel({ trailer, model }: { trailer: TrailerInterior; model: TrailerModel }) {
+function TruckModel({ model, trailer }: { model: TrailerModel; trailer: TrailerInterior }) {
   const { scene } = useGLTF(model.url)
-  const scale = truckScale(trailer, model)
-
-  useLayoutEffect(() => {
+  const scale = trailer.length / model.cargoLength
+  const prepared = useMemo(() => {
     scene.traverse((object) => {
       if (!(object instanceof Mesh)) return
+      object.visible = true
       object.castShadow = true
       object.receiveShadow = true
+      if (!isTrailerShell(object)) return
       const materials = Array.isArray(object.material) ? object.material : [object.material]
       for (const material of materials) {
         if (!(material instanceof MeshStandardMaterial)) continue
-        if (!isTrailerShell(object, material)) continue
         material.transparent = true
         material.opacity = Math.min(material.opacity, 0.22)
         material.depthWrite = false
         material.side = DoubleSide
       }
     })
+    return scene
   }, [scene])
 
   return (
     <Clone
-      object={scene}
+      object={prepared}
       castShadow
       receiveShadow
       scale={scale}
@@ -96,20 +91,19 @@ function CargoMeshes({
   selectedId,
   onSelect,
   trailer,
-  model,
+  floorY,
 }: {
   packed: PackedBox[]
   selectedId: string | null
   onSelect: (id: string) => void
   trailer: TrailerInterior
-  model: TrailerModel
+  floorY: number
 }) {
-  const deckY = deckHeight(trailer, model)
   return (
     <group>
       {packed.map((box) => {
         const selected = box.item.id === selectedId
-        const y = box.fitted ? deckY + box.y + box.height / 2 : box.height / 2
+        const y = box.fitted ? floorY + box.y + box.height / 2 : box.height / 2
         const x = box.x + box.length / 2
         const z = box.z + box.width / 2 - trailer.width / 2
         return (
@@ -146,13 +140,14 @@ function Scene({
   selectedId,
   onSelect,
   trailer,
-  model = DEFAULT_TRAILER_TYPE.model,
+  model = null,
 }: Omit<LoadViewportProps, 'stats' | 'className' | 'maxWeightKg'>) {
   const bay = trailer ?? DEFAULT_TRAILER
+  const floorY = model ? (bay.length / model.cargoLength) * (model.floorY - model.groundY) : CONTAINER_FLOOR
   return (
     <>
       <color attach="background" args={['#efeaf3']} />
-      <fog attach="fog" args={['#efeaf3', 22, 48]} />
+      <fog attach="fog" args={['#efeaf3', Math.max(22, bay.length), Math.max(48, bay.length * 2.5)]} />
       <hemisphereLight args={['#fff7ff', '#b7a4c2', 0.55]} />
       <ambientLight intensity={0.35} />
       <directionalLight
@@ -186,18 +181,22 @@ function Scene({
         infiniteGrid
       />
       <group position={[-bay.length / 2, 0, 0]}>
-        <Suspense fallback={null}>
-          <TruckModel key={model.url} trailer={bay} model={model} />
-        </Suspense>
-        <CargoMeshes packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={bay} model={model} />
+        {model ? (
+          <Suspense fallback={null}>
+            <TruckModel key={model.url} model={model} trailer={bay} />
+          </Suspense>
+        ) : (
+          <CargoContainer trailer={bay} floorY={floorY} />
+        )}
+        <CargoMeshes packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={bay} floorY={floorY} />
       </group>
       <ContactShadows position={[0, 0.01, 0]} opacity={0.35} scale={40} blur={2.4} far={12} />
       <OrbitControls
         makeDefault
         enableDamping
-        target={[0, 1.55, 0]}
+        target={[0, floorY + bay.height * 0.35, 0]}
         minDistance={7}
-        maxDistance={34}
+        maxDistance={Math.max(34, bay.length * 2.4)}
         maxPolarAngle={Math.PI / 2.08}
       />
     </>
@@ -222,7 +221,7 @@ export function LoadViewport({
         shadows
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: false }}
-        camera={{ position: [8.2, 6.1, 14.4], fov: 38, near: 0.1, far: 90 }}
+        camera={{ position: [8.2, 6.1, 14.4], fov: 38, near: 0.1, far: 240 }}
         onPointerMissed={() => onSelect(null)}
       >
         <Scene packed={packed} selectedId={selectedId} onSelect={onSelect} trailer={trailer} model={model} />
