@@ -15,8 +15,8 @@ import {
 } from '../lib/cargo'
 import { parseDimension } from '../lib/format'
 import { calculateLoad } from '../lib/packingApi'
-import { DEFAULT_TRAILER_SPEC, type NewShipmentState } from '../lib/trailer'
-import { trailerTypeById, typeForSpec } from '../lib/trailerTypes'
+import type { NewShipmentState } from '../lib/trailer'
+import { DEFAULT_TRAILER_TYPE, trailerTypeById, typeForSpec } from '../lib/trailerTypes'
 import type { CargoItem, CargoPlacement, TrailerSpec } from '../types'
 
 const SIDE_BY_SIDE = '(min-width: 1024px)'
@@ -153,7 +153,8 @@ export function CreateShipmentPage() {
   const location = useLocation()
   const [shipmentId] = useState(newShipmentId)
   const [trailer, setTrailer] = useState<TrailerSpec>(
-    () => (location.state as NewShipmentState | null)?.trailer ?? DEFAULT_TRAILER_SPEC,
+    () =>
+      (location.state as NewShipmentState | null)?.trailer ?? { ...DEFAULT_TRAILER_TYPE.spec, units: 'metric' },
   )
   const [trailerTypeId, setTrailerTypeId] = useState(() => typeForSpec(trailer).id)
   const [items, setItems] = useState<CargoItem[]>(() => [
