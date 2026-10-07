@@ -14,10 +14,7 @@ export type TrailerModel = {
   floorY: number
 }
 
-/**
- * Stand-in until each type has its own file in public/models.
- * Replace the GLB, then remeasure these values on that file.
- */
+/** Shared by every type until each one has its own GLB. */
 const STAND_IN_TRUCK: TrailerModel = {
   url: '/models/long_truck1_transparent.glb',
   cargoZFront: 1.2191,
@@ -43,19 +40,19 @@ export const TRAILER_TYPES: TrailerType[] = [
     id: 'european-semi',
     label: 'European semi-trailer',
     spec: { length: 13.6, width: 2.48, height: 2.7, maxWeightKg: 24_000 },
-    model: { ...STAND_IN_TRUCK, url: '/models/european-semi-trailer.glb' },
+    model: STAND_IN_TRUCK,
   },
   {
     id: 'european-trailer',
     label: 'European trailer',
     spec: { length: 7.45, width: 2.48, height: 2.7, maxWeightKg: 16_000 },
-    model: { ...STAND_IN_TRUCK, url: '/models/european-trailer.glb' },
+    model: STAND_IN_TRUCK,
   },
   {
     id: 'rigid-truck',
     label: 'Truck with fixed body',
     spec: { length: 7.3, width: 2.45, height: 2.4, maxWeightKg: 9_000 },
-    model: { ...STAND_IN_TRUCK, url: '/models/rigid-truck.glb' },
+    model: STAND_IN_TRUCK,
   },
   {
     id: CUSTOM_TRAILER_ID,
