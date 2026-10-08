@@ -71,7 +71,7 @@ export function LoginPage() {
   }
 
     setIsLoading(true);
-    setPassword('');
+
   
 
 try {
