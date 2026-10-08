@@ -40,9 +40,9 @@ const LEGEND = [
 
 function Stat({ label, value, danger = false }: { label: string; value: string | number; danger?: boolean }) {
   return (
-    <div className="px-1 py-2 sm:px-1">
+    <div className="px-1 py-1 sm:px-1">
       <dt className="text-[10px] font-medium tracking-[0.04em] text-ink-faint uppercase">{label}</dt>
-      <dd className={`text-[13px] font-semibold tabular-nums ${danger ? 'text-danger' : 'text-ink'}`}>{value}</dd>
+      <dd className={`text-[10px] font-semibold tabular-nums ${danger ? 'text-danger' : 'text-ink'}`}>{value}</dd>
     </div>
   )
 }

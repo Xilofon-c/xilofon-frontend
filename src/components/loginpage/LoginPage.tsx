@@ -71,7 +71,7 @@ export function LoginPage() {
   }
 
     setIsLoading(true);
-
+    setPassword('');
   
 
 try {
@@ -84,12 +84,10 @@ try {
       role,
     };
 
-    await api.post('/data/signup', signUpData);
+     await api.post<LoginResponse>('/data/signup', signUpData);
 
+   setActiveTab('Login');
 
-    setActiveTab('Login');
-    setPassword('');
-    setCheckPassword('');
   } 
   
   else {
@@ -102,7 +100,7 @@ try {
 
     writeSession(sessionFromProfile(data), data.access_token);
 
-    navigate(data.role === 'office' ? '/' : '/account');
+    navigate('/account');
   }
 } catch (err) {
   setError(apiError(err, 'Something went wrong. Please try again.'));

@@ -41,12 +41,12 @@ function AuthShell() {
 export default function App() {
   return (
     <Routes>
-      <Route element={<AuthShell />}>
+          <Route element={<AuthShell />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/input-pin" element={<GetPIN />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-      </Route>
+       </Route> 
       <Route element={<AppShell />}>
         <Route path="/" element={
           <OfficeRoute>
