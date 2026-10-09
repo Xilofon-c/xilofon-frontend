@@ -65,9 +65,7 @@ const ResetPassword = () => {
           <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full bg-accent/10 blur-3xl pointer-events-none" aria-hidden="true" />
          <div className="absolute -bottom-10 -right-32 w-[480px] h-[480px] rounded-full bg-accent-hover/15 blur-3xl pointer-events-none" aria-hidden="true" />
           
-          <div className="  absolute md:-top-77 md:-left-9 lg:-top-24 lg:-left-84 w-60 h-60 rounded-full bg-accent/20 pointer-events-none" aria-hidden="true" />
-<div className="absolute md:-top-77 md:-left-29  lg:top-12 lg:-left-84 w-40 h-40 rounded-full bg-accent-hover/20 pointer-events-none" aria-hidden="true" />
-<div className="absolute  md:-top-57 md:-left-59  lg:top-34 lg:-left-84  w-60 h-60 rounded-full bg-accent/15 pointer-events-none" aria-hidden="true" />
+         
 
  
 

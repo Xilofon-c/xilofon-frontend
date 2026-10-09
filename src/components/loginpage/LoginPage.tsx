@@ -87,6 +87,7 @@ try {
      await api.post<LoginResponse>('/data/signup', signUpData);
 
    setActiveTab('Login');
+   setPassword('');
 
   } 
   
