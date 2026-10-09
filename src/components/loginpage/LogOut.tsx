@@ -96,14 +96,7 @@ const LogOut = () => {
                 )}
                 {leaving ? 'Logging out…' : 'Log Me Out'}
               </button>
-              <button
-                type="button"
-                onClick={cancel}
-                disabled={leaving}
-                className="bg-white/0 border-2 border-white rounded-xl text-white p-3 text-md md:text-xl font-semibold transition hover:bg-white hover:text-accent focus-visible:outline-white disabled:opacity-70"
-              >
-                Cancel
-              </button>
+             
             </div>
             <p className="hidden lg:block pl-10 mt-3 text-[12px] text-white/60">Press Esc to cancel.</p>
 

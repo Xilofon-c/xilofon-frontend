@@ -12,7 +12,7 @@ const TOKEN = 'authToken'
 
 export const ROLE_LABEL: Record<UserRole, string> = {
   office: 'Office',
-  loader: 'Loading',
+  loader: 'Loader',
 }
 
 const FALLBACK: Session = { name: 'Operations user', email: 'ops@smartcargo.io', role: 'office' }

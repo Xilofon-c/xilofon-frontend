@@ -54,7 +54,7 @@ const ForgotPassword = () => {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <img
-          className="hidden md:block h-[470px] w-auto mt-10"
+          className="hidden md:block h-[450px] w-auto mb-35"
           src="/forgotpass.png"
           alt="forgot-password-image"
         />

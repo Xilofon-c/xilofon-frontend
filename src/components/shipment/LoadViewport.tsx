@@ -40,9 +40,9 @@ const LEGEND = [
 
 function Stat({ label, value, danger = false }: { label: string; value: string | number; danger?: boolean }) {
   return (
-    <div className="px-3 py-2 sm:px-4">
-      <dt className="text-[11px] font-medium tracking-[0.04em] text-ink-faint uppercase">{label}</dt>
-      <dd className={`text-[15px] font-semibold tabular-nums ${danger ? 'text-danger' : 'text-ink'}`}>{value}</dd>
+    <div className="px-1 py-1 sm:px-1">
+      <dt className="text-[10px] font-medium tracking-[0.04em] text-ink-faint uppercase">{label}</dt>
+      <dd className={`text-[10px] font-semibold tabular-nums ${danger ? 'text-danger' : 'text-ink'}`}>{value}</dd>
     </div>
   )
 }
@@ -243,7 +243,7 @@ export function LoadViewport({
         <p className="hidden rounded-md border border-line bg-white/90 px-3 py-2 text-[12px] text-ink-muted shadow-sm backdrop-blur md:block">
           Drag to rotate · Scroll to zoom · Click a box to select it
         </p>
-        <dl className="text-start  grid grid-cols-4 divide-x divide-line text-[10px]  rounded-md border border-line bg-white/95 shadow-sm backdrop-blur">
+        <dl className="text-start  grid grid-cols-4 divide-x divide-line text-[10px] w-[270px] rounded-md border border-line bg-white/95 shadow-sm backdrop-blur">
           <Stat label="Boxes" value={stats.count} />
           <Stat
             label="Fitted"
