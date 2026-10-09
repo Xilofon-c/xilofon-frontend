@@ -36,7 +36,7 @@ function isAllowed(file: File) {
   return file.type.startsWith('image/') || file.type === 'application/pdf'
 }
 
-export function BolUpload() {
+export function BolUpload({ onFileChange }: { onFileChange?: (file: File | null) => void }) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -47,6 +47,7 @@ export function BolUpload() {
     if (!next) {
       setFile(null)
       setError(null)
+      onFileChange?.(null)
       return
     }
     if (!isAllowed(next)) {
@@ -59,6 +60,7 @@ export function BolUpload() {
     }
     setError(null)
     setFile(next)
+    onFileChange?.(next)
   }
 
   function onChange(event: ChangeEvent<HTMLInputElement>) {
@@ -82,6 +84,7 @@ export function BolUpload() {
   function removeFile() {
     setFile(null)
     setError(null)
+    onFileChange?.(null)
   }
 
   return (

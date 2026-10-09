@@ -9,8 +9,9 @@ export const DEFAULT_TRAILER_MAX_WEIGHT_KG = 24_000
 /**
  * The packing engine is unit-agnostic; we send centimetres. Its axes differ from the viewport's:
  * x runs across the trailer width, y along its length, z is vertical.
+ * `/shipments/bol` takes this same body.
  */
-type CalculateLoadRequest = {
+export type LoadPlanRequest = {
   truck: { name: string; width: number; length: number; height: number; max_weight: number }
   boxes: Array<{
     name: string
@@ -68,13 +69,17 @@ function errorMessage(error: unknown) {
   return `Load calculation failed (${error.response.status})`
 }
 
-/** Returns placements keyed by cargo item id; items missing from the map did not fit. */
-export async function calculateLoad(
+export function isCanceledRequest(error: unknown) {
+  return isAxiosError(error) && error.code === 'ERR_CANCELED'
+}
+
+/** Body shared by load calculation and BOL generation. */
+export function buildLoadPlanRequest(
   items: CargoItem[],
   trailer: TrailerInterior = DEFAULT_TRAILER,
   maxWeightKg: number | null = null,
-): Promise<Map<string, CargoPlacement>> {
-  const payload: CalculateLoadRequest = {
+): LoadPlanRequest {
+  return {
     truck: {
       name: 'trailer',
       width: mToCm(trailer.width),
@@ -83,7 +88,7 @@ export async function calculateLoad(
       max_weight: maxWeightKg ?? DEFAULT_TRAILER_MAX_WEIGHT_KG,
     },
     boxes: items.map((item, index) => ({
-      name: item.id,
+      name: item.name,
       width: parseDimension(item.width) ?? 0,
       length: parseDimension(item.length) ?? 0,
       height: parseDimension(item.height) ?? 0,
@@ -96,19 +101,35 @@ export async function calculateLoad(
       priority: items.length - index,
     })),
   }
+}
+
+/** Returns placements keyed by cargo item id; items missing from the map did not fit. */
+export async function calculateLoad(
+  items: CargoItem[],
+  trailer: TrailerInterior = DEFAULT_TRAILER,
+  maxWeightKg: number | null = null,
+  signal?: AbortSignal,
+): Promise<Map<string, CargoPlacement>> {
+  const payload = buildLoadPlanRequest(items, trailer, maxWeightKg)
 
   let data: CalculateLoadResponse
   try {
-    ;({ data } = await api.post<CalculateLoadResponse>('/packing/calculate-load', payload))
+    ;({ data } = await api.post<CalculateLoadResponse>('/packing/calculate-load', payload, { signal }))
   } catch (error) {
+    if (isCanceledRequest(error)) throw error
     throw new Error(errorMessage(error))
   }
 
-  const ids = new Set(items.map((item) => item.id))
+  const idsByName = new Map<string, string[]>()
+  for (const item of items) {
+    const queue = idsByName.get(item.name) ?? []
+    queue.push(item.id)
+    idsByName.set(item.name, queue)
+  }
   const placements = new Map<string, CargoPlacement>()
   for (const { item: placed } of data.placed ?? []) {
-    const id = placed.name.replace(/_\d+$/, '')
-    if (!ids.has(id)) continue
+    const id = idsByName.get(placed.name.replace(/_\d+$/, ''))?.shift()
+    if (!id) continue
     placements.set(id, {
       x: placed.y / 100,
       y: placed.z / 100,

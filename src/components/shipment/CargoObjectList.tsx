@@ -57,6 +57,14 @@ function DimField({
   )
 }
 
+type ItemMeasure = { top: number; height: number }
+
+type DragState = {
+  from: number
+  to: number
+  measures: ItemMeasure[]
+}
+
 function scrollToItem(container: HTMLElement, item: HTMLElement) {
   const containerRect = container.getBoundingClientRect()
   const itemRect = item.getBoundingClientRect()
@@ -64,6 +72,35 @@ function scrollToItem(container: HTMLElement, item: HTMLElement) {
   if (fullyVisible) return
   const delta = itemRect.top - containerRect.top - (container.clientHeight - itemRect.height) / 2
   container.scrollTo({ top: Math.max(0, container.scrollTop + delta), behavior: 'smooth' })
+}
+
+/** Vertical shift that opens a gap and parks the dragged card inside it. Layout order stays put until drop. */
+function previewShift(from: number, to: number, measures: ItemMeasure[]) {
+  if (from === to || measures.length === 0 || from < 0 || to < 0 || from >= measures.length || to >= measures.length) {
+    return measures.map(() => 0)
+  }
+  const gap = measures.length > 1 ? measures[1].top - (measures[0].top + measures[0].height) : 0
+  const order = measures.map((_, index) => index)
+  const [moved] = order.splice(from, 1)
+  if (moved === undefined) return measures.map(() => 0)
+  order.splice(to, 0, moved)
+  const visualTop = new Array<number>(measures.length)
+  let y = measures[0].top
+  for (const index of order) {
+    visualTop[index] = y
+    y += measures[index].height + gap
+  }
+  return measures.map((measure, index) => Math.round(visualTop[index] - measure.top))
+}
+
+function previewIndex(index: number, from: number, to: number, count: number) {
+  if (from === to) return index
+  const order = Array.from({ length: count }, (_, itemIndex) => itemIndex)
+  const [moved] = order.splice(from, 1)
+  if (moved === undefined) return index
+  order.splice(to, 0, moved)
+  const next = order.indexOf(index)
+  return next === -1 ? index : next
 }
 
 export function CargoObjectList({
@@ -80,8 +117,8 @@ export function CargoObjectList({
 }: CargoObjectListProps) {
   const listRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef(new Map<string, HTMLLIElement>())
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
-  const [dropIndex, setDropIndex] = useState<number | null>(null)
+  const dragRef = useRef<DragState | null>(null)
+  const [drag, setDrag] = useState<DragState | null>(null)
 
   useEffect(() => {
     if (scrollToken === 0 || !selectedId) return
@@ -92,20 +129,31 @@ export function CargoObjectList({
     return () => cancelAnimationFrame(frame)
   }, [scrollToken, selectedId])
 
-  function indexAt(clientY: number) {
-    let match = 0
-    let best = Number.POSITIVE_INFINITY
-    items.forEach((item, index) => {
-      const node = itemRefs.current.get(item.id)
-      if (!node) return
-      const rect = node.getBoundingClientRect()
-      const distance = Math.abs(clientY - (rect.top + rect.height / 2))
-      if (distance < best) {
-        best = distance
-        match = index
+  function measureItems() {
+    const list = listRef.current
+    if (!list) return []
+    const listRect = list.getBoundingClientRect()
+    return items.map((item) => {
+      const rect = itemRefs.current.get(item.id)?.getBoundingClientRect()
+      return {
+        top: rect ? rect.top - listRect.top + list.scrollTop : 0,
+        height: rect?.height ?? 0,
       }
     })
-    return match
+  }
+
+  function indexAt(clientY: number, from: number, measures: ItemMeasure[]) {
+    const list = listRef.current
+    if (!list || measures.length === 0) return from
+    const contentY = clientY - list.getBoundingClientRect().top + list.scrollTop
+    let to = from
+    for (let index = 0; index < measures.length; index += 1) {
+      if (index === from) continue
+      const mid = measures[index].top + measures[index].height / 2
+      if (from < index && contentY > mid) to = index
+      else if (from > index && contentY < mid) to = Math.min(to, index)
+    }
+    return to
   }
 
   function onGripPointerDown(event: ReactPointerEvent<HTMLButtonElement>, index: number) {
@@ -119,37 +167,41 @@ export function CargoObjectList({
     const previousSelect = document.body.style.userSelect
     document.body.style.cursor = 'grabbing'
     document.body.style.userSelect = 'none'
-    setDraggingIndex(index)
-    setDropIndex(index)
-    let to = index
+    const session: DragState = { from: index, to: index, measures: measureItems() }
+    dragRef.current = session
+    setDrag(session)
 
     const move = (pointer: PointerEvent) => {
-      if (pointer.pointerId !== pointerId) return
+      const current = dragRef.current
+      if (!current || pointer.pointerId !== pointerId) return
       const container = listRef.current
       if (container) {
         const rect = container.getBoundingClientRect()
         if (pointer.clientY < rect.top + 36) container.scrollTop -= 14
         else if (pointer.clientY > rect.bottom - 36) container.scrollTop += 14
       }
-      const next = indexAt(pointer.clientY)
-      if (next === to) return
-      to = next
-      setDropIndex(next)
+      const next = indexAt(pointer.clientY, current.from, current.measures)
+      if (next === current.to) return
+      current.to = next
+      setDrag({ ...current, measures: current.measures })
     }
     const end = (pointer: PointerEvent) => {
-      if (pointer.pointerId !== pointerId) return
+      const current = dragRef.current
+      if (!current || pointer.pointerId !== pointerId) return
+      dragRef.current = null
       document.body.style.cursor = previousCursor
       document.body.style.userSelect = previousSelect
-      setDraggingIndex(null)
-      setDropIndex(null)
+      setDrag(null)
       handle.removeEventListener('pointermove', move)
       handle.removeEventListener('pointerup', end)
       handle.removeEventListener('pointercancel', end)
-      if (to !== index) onReorder(index, to)
+      handle.removeEventListener('lostpointercapture', end)
+      if (current.to !== current.from) onReorder(current.from, current.to)
     }
     handle.addEventListener('pointermove', move)
     handle.addEventListener('pointerup', end)
     handle.addEventListener('pointercancel', end)
+    handle.addEventListener('lostpointercapture', end)
   }
 
   return (
@@ -180,11 +232,12 @@ export function CargoObjectList({
             Add an object, or import a BOL or spreadsheet.
           </div>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="relative flex flex-col gap-2">
             {items.map((item, index) => {
               const selected = item.id === selectedId
-              const dragging = draggingIndex === index
-              const dropTarget = dropIndex === index && draggingIndex !== null && dropIndex !== draggingIndex
+              const dragging = drag?.from === index
+              const shift = drag ? previewShift(drag.from, drag.to, drag.measures)[index] ?? 0 : 0
+              const priority = drag ? previewIndex(index, drag.from, drag.to, items.length) : index
               return (
                 <li
                   key={item.id}
@@ -192,11 +245,14 @@ export function CargoObjectList({
                     if (node) itemRefs.current.set(item.id, node)
                     else itemRefs.current.delete(item.id)
                   }}
+                  className={drag ? 'relative transition-transform duration-200 ease-out' : undefined}
+                  style={drag ? { transform: `translateY(${shift}px)`, zIndex: dragging ? 2 : 0 } : undefined}
                 >
                   <article
                     className={`rounded-[var(--radius)] border bg-canvas p-3 transition-colors ${
                       selected ? 'border-accent shadow-[0_0_0_3px_rgba(73,10,103,0.12)]' : 'border-line hover:border-line-strong'
-                    } ${dragging ? 'opacity-50' : ''} ${dropTarget ? 'ring-2 ring-accent ring-offset-2 ring-offset-canvas-muted' : ''}`}
+                    } ${dragging ? 'shadow-lg' : ''}`}
+                    style={dragging ? { opacity: 0.6 } : undefined}
                     onClick={() => onSelect(item.id)}
                     aria-current={selected ? 'true' : undefined}
                   >
@@ -204,7 +260,8 @@ export function CargoObjectList({
                       <button
                         type="button"
                         className="grid h-7 w-5 shrink-0 cursor-grab place-items-center rounded text-ink-faint touch-none hover:bg-canvas-muted hover:text-ink active:cursor-grabbing disabled:cursor-default disabled:opacity-30"
-                        aria-label={`Reorder ${item.name}. Priority ${index + 1}.`}
+                        aria-label={`Reorder ${item.name}. Priority ${priority + 1}.`}
+                        aria-grabbed={dragging ? 'true' : undefined}
                         title="Drag to change priority"
                         disabled={items.length < 2}
                         onPointerDown={(event) => onGripPointerDown(event, index)}
@@ -238,7 +295,7 @@ export function CargoObjectList({
                       </label>
                       <div className="flex items-center">
                         <span className="mono min-w-5 text-center text-[12px] text-ink-faint" title="Load priority">
-                          {index + 1}
+                          {priority + 1}
                         </span>
                         <div className="flex flex-col">
                           <button

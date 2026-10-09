@@ -13,8 +13,8 @@ import {
 } from 'lucide-react'
 import { apiError } from '../lib/apiClient'
 import { createReport, listReports, type Report } from '../lib/reportsApi'
+import { useShipmentList } from '../hooks/useShipmentList'
 import { isSignedIn } from '../lib/session'
-import { SHIPMENTS } from '../lib/shipments'
 import { AppScreen } from './AppScreen'
 
 const ISSUE_TYPES: { label: string; hint: string; icon: LucideIcon }[] = [
@@ -53,6 +53,7 @@ export function ReportPage() {
   const [reports, setReports] = useState<Report[] | null>(null)
   const [listError, setListError] = useState<string | null>(null)
   const signedIn = isSignedIn()
+  const { rows: shipmentRows } = useShipmentList(signedIn)
 
   const loadReports = useCallback(async () => {
     setListError(null)
@@ -153,16 +154,16 @@ export function ReportPage() {
                 id="report-shipment"
                 className="field-input mono uppercase"
                 name="shipment"
-                placeholder="TRK-8921"
+                placeholder="XLF-"
                 autoComplete="off"
                 list="report-shipment-options"
                 maxLength={40}
                 required
               />
               <datalist id="report-shipment-options">
-                {SHIPMENTS.map((shipment) => (
+                {shipmentRows?.map((shipment) => (
                   <option key={shipment.id} value={shipment.id}>
-                    {shipment.vehicle} · {shipment.destination}
+                    {shipment.truck?.name ?? 'Trailer'} · {shipment.created_by}
                   </option>
                 ))}
               </datalist>
