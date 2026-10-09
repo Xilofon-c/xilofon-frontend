@@ -184,6 +184,7 @@ export function CreateShipmentPage() {
     }),
   ])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [listFocus, setListFocus] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [placements, setPlacements] = useState<Map<string, CargoPlacement> | null>(null)
@@ -240,6 +241,27 @@ export function CreateShipmentPage() {
     invalidateLayout()
   }
 
+  function moveItem(from: number, to: number) {
+    if (from === to) return
+    setItems((current) => {
+      if (from < 0 || to < 0 || from >= current.length || to >= current.length) return current
+      const next = current.slice()
+      const [moved] = next.splice(from, 1)
+      if (!moved) return current
+      next.splice(to, 0, moved)
+      return next
+    })
+    setGenerateError(null)
+    invalidateLayout()
+  }
+
+  function selectFromScene(id: string | null) {
+    setSelectedId(id)
+    if (!id) return
+    setCargoOpen(true)
+    setListFocus((tick) => tick + 1)
+  }
+
   async function onGenerate() {
     const ready = items.filter(cargoHasDimensions)
     if (ready.length === 0) {
@@ -293,9 +315,11 @@ export function CreateShipmentPage() {
         <CargoObjectList
           items={items}
           selectedId={selectedId}
+          scrollToken={listFocus}
           onSelect={setSelectedId}
           onChange={updateItem}
           onRemove={removeItem}
+          onReorder={moveItem}
           onAdd={addItem}
           toolbar={collapseCargo}
           onImported={(imported) => {
@@ -383,7 +407,7 @@ export function CreateShipmentPage() {
       className="min-h-[140px] min-w-0 flex-1"
       packed={packed}
       selectedId={selectedId}
-      onSelect={setSelectedId}
+      onSelect={selectFromScene}
       stats={stats}
       trailer={trailer}
       model={trailerTypeById(trailerTypeId).model}

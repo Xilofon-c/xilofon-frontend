@@ -22,6 +22,7 @@ type CalculateLoadRequest = {
     fragile: boolean
     tiltable: boolean
     stackable: boolean
+    priority: number
   }>
 }
 
@@ -81,7 +82,7 @@ export async function calculateLoad(
       height: mToCm(trailer.height),
       max_weight: maxWeightKg ?? DEFAULT_TRAILER_MAX_WEIGHT_KG,
     },
-    boxes: items.map((item) => ({
+    boxes: items.map((item, index) => ({
       name: item.id,
       width: parseDimension(item.width) ?? 0,
       length: parseDimension(item.length) ?? 0,
@@ -91,6 +92,8 @@ export async function calculateLoad(
       fragile: item.fragile,
       tiltable: item.tiltable,
       stackable: item.stackable,
+      // List order is load priority: the first box is packed before the ones below it.
+      priority: items.length - index,
     })),
   }
 
