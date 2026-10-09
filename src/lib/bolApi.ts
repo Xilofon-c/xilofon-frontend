@@ -1,4 +1,5 @@
 import { createCargoItem } from './cargo'
+import { api, apiError } from './apiClient'
 import type { CargoItem } from '../types'
 
 function apiBase() {
@@ -33,6 +34,27 @@ export type BolGeneratePayload = {
     widthCm: number
     heightCm: number
     color: string
+  }>
+}
+
+type BolResponse = {
+  truck: {
+    name: string
+    width: number
+    length: number
+    height: number
+    max_weight: number
+  }
+  boxes: Array<{
+    name: string
+    width: number
+    length: number
+    height: number
+    weight: number
+    quantity: number
+    stackable: boolean
+    tiltable: boolean
+    fragile: boolean
   }>
 }
 
@@ -106,68 +128,39 @@ export async function generateBolPdf(payload: BolGeneratePayload) {
   downloadBlob(blob, filename)
 }
 
-type ExtractedRow = {
-  name?: string
-  length?: string | number
-  width?: string | number
-  height?: string | number
-  weight?: string | number
-  fragile?: boolean | string
-  tiltable?: boolean | string
-  stackable?: boolean | string
-  quantity?: number | string
-}
+export async function importBol(file: File): Promise<CargoItem[]> {
+  const form = new FormData()
+  form.append('file', file)
 
-function asText(value: string | number | boolean | undefined) {
-  if (value === undefined) return ''
-  return String(value)
-}
+  let data: BolResponse
 
-function asFlag(value: boolean | string | undefined, fallback: boolean) {
-  if (value === undefined || value === '') return fallback
-  if (typeof value === 'boolean') return value
-  const normalized = value.trim().toLowerCase()
-  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'y'
-}
-
-export async function extractCargoFromDocument(file: File): Promise<CargoItem[]> {
-  const body = new FormData()
-  body.append('file', file)
-
-  let response: Response
   try {
-    response = await fetch(`${apiBase()}/documents/extract`, {
-      method: 'POST',
-      body,
-    })
-  } catch {
-    throw new Error('Could not reach the document reader. Use CSV or Excel, or start the backend.')
+    const response = await api.post<BolResponse>('/data/import/bol', form)
+    data = response.data
+  } catch (error) {
+    throw new Error(apiError(error, 'Could not import the BOL file.'))
   }
 
-  if (!response.ok) {
-    throw new Error(await readError(response))
+  if (!data.boxes?.length) {
+    throw new Error('The BOL did not contain any cargo items.')
   }
 
-  const payload = (await response.json()) as { items?: ExtractedRow[] }
-  const rows = payload.items ?? []
-  if (rows.length === 0) {
-    throw new Error('The document did not contain any cargo lines.')
-  }
+  const items = data.boxes.flatMap((box, index) => {
+    const quantity = Math.max(1, box.quantity || 1)
 
-  return rows.flatMap((row, index) => {
-    const quantity = Math.max(1, Math.min(99, Number(row.quantity ?? 1) || 1))
-    const name = asText(row.name).trim() || `Object ${index + 1}`
     return Array.from({ length: quantity }, (_, copy) =>
       createCargoItem({
-        name: quantity > 1 ? `${name} ${copy + 1}` : name,
-        length: asText(row.length),
-        width: asText(row.width),
-        height: asText(row.height),
-        weight: asText(row.weight),
-        fragile: asFlag(row.fragile, false),
-        tiltable: asFlag(row.tiltable, false),
-        stackable: asFlag(row.stackable, true),
+        name: quantity > 1 ? `${box.name} ${copy + 1}` : box.name || `Item ${index + 1}`,
+        length: String(box.length),
+        width: String(box.width),
+        height: String(box.height),
+        weight: String(box.weight),
+        fragile: box.fragile,
+        tiltable: box.tiltable,
+        stackable: box.stackable,
       }),
     )
   })
+
+  return items
 }
