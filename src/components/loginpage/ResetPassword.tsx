@@ -108,14 +108,14 @@ const ResetPassword = () => {
               {rules.map((r) => (
                 <li
                   key={r.label}
-                  className={r.ok(password) ? 'text-green-700 text-base' : 'text-gray-600 text-base'}
+                  className={r.ok(password) ? 'text-green-600 text-base' : 'text-gray-600 text-base'}
                 >
                   {r.ok(password) ? '✓' : '○'} {r.label}
                 </li>
               ))}
             </ul>
             {done && (
-              <p className="text-green-700 mt-2 text-base" role="status">
+              <p className="text-green-600 mt-2 text-base" role="status">
                 Password updated. Log in with the new password.
               </p>
             )}
