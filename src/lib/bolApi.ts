@@ -1,41 +1,8 @@
+import { isAxiosError } from 'axios'
 import { createCargoItem } from './cargo'
 import { api, apiError } from './apiClient'
+import type { LoadPlanRequest } from './packingApi'
 import type { CargoItem } from '../types'
-
-function apiBase() {
-  return (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '')
-}
-
-export type BolGeneratePayload = {
-  shipmentId: string
-  trailer: {
-    lengthM: number
-    widthM: number
-    heightM: number
-  }
-  items: Array<{
-    id: string
-    name: string
-    lengthCm: number
-    widthCm: number
-    heightCm: number
-    weightKg: number
-    fragile: boolean
-    tiltable: boolean
-    stackable: boolean
-  }>
-  // Exactly where the 3D view put each box (cm). The PDF is drawn from this, so it matches the screen.
-  layout?: Array<{
-    id: string
-    xCm: number // along the trailer, 0 = cab end
-    yCm: number // height above the floor
-    zCm: number // across the trailer width
-    lengthCm: number
-    widthCm: number
-    heightCm: number
-    color: string
-  }>
-}
 
 type BolResponse = {
   truck: {
@@ -83,49 +50,62 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-async function readError(response: Response) {
-  const type = response.headers.get('content-type') ?? ''
-  if (type.includes('application/json')) {
-    const body = (await response.json()) as { message?: string; error?: string }
-    return body.message ?? body.error ?? `Request failed (${response.status})`
+function detailMessage(detail: unknown, status: number) {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail) && detail.length > 0) {
+    const first = detail[0] as { msg?: string; loc?: Array<string | number> }
+    const where = first.loc?.slice(1).join('.')
+    return where ? `${where}: ${first.msg ?? 'invalid value'}` : (first.msg ?? 'Invalid cargo data.')
   }
-  const text = (await response.text()).trim()
-  if (type.includes('text/html') || text.startsWith('<!')) {
-    return 'The BOL service is unreachable. Confirm the backend is running.'
-  }
-  return text.slice(0, 180) || `Request failed (${response.status})`
+  return `Could not generate the BOL (${status}).`
 }
 
-export async function generateBolPdf(payload: BolGeneratePayload) {
-  let response: Response
+async function bolErrorMessage(error: unknown) {
+  if (!isAxiosError(error)) {
+    return error instanceof Error ? error.message : 'Could not generate the BOL.'
+  }
+  if (!error.response) return 'The BOL service is unreachable. Confirm the backend is running.'
+
+  const { status, data } = error.response
+  const raw = data instanceof Blob ? (await data.text()).trim() : ''
+  if (!raw) return detailMessage((data as { detail?: unknown } | undefined)?.detail, status)
+  if (raw.startsWith('<!') || raw.startsWith('<html')) {
+    return 'The BOL service is unreachable. Confirm the backend is running.'
+  }
   try {
-    response = await fetch(`${apiBase()}/shipments/bol`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/pdf',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
+    const body = JSON.parse(raw) as { detail?: unknown; message?: string; error?: string }
+    if (body.detail !== undefined) return detailMessage(body.detail, status)
+    return body.message ?? body.error ?? `Could not generate the BOL (${status}).`
   } catch {
-    throw new Error('The BOL service is unreachable. Confirm the backend is running.')
+    return raw.slice(0, 180)
+  }
+}
+
+/** Posts the calculate-load body plus the selected trailer type, and downloads the PDF. */
+export async function generateBolPdf(payload: LoadPlanRequest, shipmentId: string, trailerType: string) {
+  let response
+  try {
+    // The export service is mounted at /export; its router path is /shipments/bol.
+    response = await api.post<Blob>('/export/shipments/bol', { ...payload, trailer: trailerType }, {
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' },
+    })
+  } catch (error) {
+    throw new Error(await bolErrorMessage(error))
   }
 
-  if (!response.ok) {
-    throw new Error(await readError(response))
-  }
-
-  const type = response.headers.get('content-type') ?? ''
-  if (type.includes('application/json')) {
+  const type = `${response.headers['content-type'] ?? ''} ${response.data.type}`
+  if (type.includes('application/json') || type.includes('text/html')) {
     throw new Error('The server did not return a PDF.')
   }
 
-  const blob = await response.blob()
+  const disposition = response.headers['content-disposition']
   const filename = filenameFromDisposition(
-    response.headers.get('content-disposition'),
-    `BOL-${payload.shipmentId}.pdf`,
+    typeof disposition === 'string' ? disposition : null,
+    `BOL-${shipmentId}.pdf`,
   )
-  downloadBlob(blob, filename)
+  downloadBlob(response.data, filename)
+  return filename
 }
 
 export async function importBol(file: File): Promise<CargoItem[]> {

@@ -1,4 +1,4 @@
-import type { TrailerDimensions, TrailerSpec, UnitSystem } from '../types'
+import type { CargoItem, TrailerDimensions, TrailerSpec, UnitSystem } from '../types'
 import { DEFAULT_TRAILER } from './cargo'
 import { parseDimension } from './format'
 import { validateTrailer } from './validate'
@@ -52,5 +52,5 @@ export function formatPayload(spec: TrailerSpec) {
   return `${Number(formFromSpec(spec).maxWeight).toLocaleString()} ${unit}`
 }
 
-/** Router state that /shipments/new reads to preset its trailer. */
-export type NewShipmentState = { trailer?: TrailerSpec }
+/** Router state that /shipments/new reads to preset the trailer and cargo. */
+export type NewShipmentState = { trailer?: TrailerSpec; items?: CargoItem[]; shipmentId?: string }

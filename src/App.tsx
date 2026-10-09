@@ -1,10 +1,11 @@
-import { Outlet, Route, Routes } from 'react-router-dom'
+import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Navbar } from './components/navbar/Navbar'
 import { AccountPage } from './pages/AccountPage'
 import { CreateShipmentPage } from './pages/CreateShipmentPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './components/loginpage/LoginPage'
 import { ReportPage } from './pages/ReportPage'
+import { ShipmentDetailPage } from './pages/ShipmentDetailPage'
 import { ShipmentsPage } from './pages/ShipmentsPage'
 import ForgotPassword from './components/loginpage/ForgotPassword'
 import GetPIN from './components/loginpage/GetPIN'
@@ -14,6 +15,9 @@ import { Footer } from './components/page1-main/Footer'
 import OfficeRoute from './routes/OfficeRoute'
 
 function AppShell() {
+  const { pathname } = useLocation()
+  const showFooter = !pathname.startsWith('/shipments/')
+
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main">
@@ -21,7 +25,7 @@ function AppShell() {
       </a>
       <Navbar />
       <Outlet />
-      <Footer withNav />
+      {showFooter ? <Footer withNav /> : null}
     </div>
   )
 }
@@ -54,6 +58,7 @@ export default function App() {
           </OfficeRoute>} />
         <Route path="/shipments" element={<ShipmentsPage />} />
         <Route path="/shipments/new" element={<CreateShipmentPage />} />
+        <Route path="/shipments/:shipmentId" element={<ShipmentDetailPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/logout" element={<LogOut />} />

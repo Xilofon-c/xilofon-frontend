@@ -1,27 +1,22 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, LoaderCircle } from 'lucide-react'
 import LoadingScreen from '../components/Loading'
 import { BolUpload } from '../components/page1-main/BolUpload'
 import { TrailerDimensionsForm } from '../components/page1-main/TrailerDimensions'
 import { ShipmentTable } from '../components/shipment/ShipmentTable'
 import { useTrailerForm } from '../hooks/useTrailerForm'
+import { generateBolPdf, importBol } from '../lib/bolApi'
+import { newShipmentId } from '../lib/cargo'
+import { buildLoadPlanRequest } from '../lib/packingApi'
 import { readRole } from '../lib/session'
-import { SHIPMENTS } from '../lib/shipments'
+import { useShipmentList } from '../hooks/useShipmentList'
 import type { NewShipmentState } from '../lib/trailer'
+import { DEFAULT_TRAILER_TYPE, typeForSpec } from '../lib/trailerTypes'
 import { AppScreen } from './AppScreen'
 
 
 let splashShown = false
-
-const avgVolume = Math.round(SHIPMENTS.reduce((sum, row) => sum + row.volume, 0) / SHIPMENTS.length)
-
-const KPIS = [
-  { label: 'Loading now', value: SHIPMENTS.filter((row) => row.status === 'Loading').length },
-  { label: 'Drafts', value: SHIPMENTS.filter((row) => row.status === 'Draft').length },
-  { label: 'Completed', value: SHIPMENTS.filter((row) => row.status === 'Completed').length },
-  { label: 'Avg. volume used', value: `${avgVolume}%` },
-]
 
 export function HomePage() {
   const [showLoader, setShowLoader] = useState(() => !splashShown)
@@ -29,20 +24,55 @@ export function HomePage() {
   const trailerForm = useTrailerForm()
   const trailerStep = useRef<HTMLDivElement>(null)
   const [trailerError, setTrailerError] = useState(false)
+  const [bolFile, setBolFile] = useState<File | null>(null)
+  const [bolError, setBolError] = useState<string | null>(null)
+  const [continuing, setContinuing] = useState(false)
   const isOffice = readRole() === 'office'
+  const { rows, error } = useShipmentList()
+  const list = rows ?? []
+  const loaded = rows !== null && !error
+  const placed = list.reduce((sum, row) => sum + row.stats.placed, 0)
+  const unplaced = list.reduce((sum, row) => sum + row.stats.unplaced, 0)
+  const avgVolume = list.length > 0 ? Math.round(list.reduce((sum, row) => sum + row.stats.volume_percent, 0) / list.length) : 0
+  const kpis = [
+    { label: 'Shipments', value: loaded ? String(list.length) : '—' },
+    { label: 'Boxes placed', value: loaded ? String(placed) : '—' },
+    { label: 'Left out', value: loaded ? String(unplaced) : '—' },
+    { label: 'Avg. volume used', value: loaded ? `${avgVolume}%` : '—' },
+  ]
 
-  function continueToPlan() {
-    if (trailerForm.isEmpty) {
-      navigate('/shipments/new')
-      return
-    }
-    const trailer = trailerForm.validateAll()
-    if (!trailer) {
+  async function continueToPlan() {
+    setBolError(null)
+    const trailer = trailerForm.isEmpty ? null : trailerForm.validateAll()
+    if (!trailerForm.isEmpty && !trailer) {
       setTrailerError(true)
       trailerStep.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
     }
-    navigate('/shipments/new', { state: { trailer } satisfies NewShipmentState })
+    setTrailerError(false)
+
+    if (!bolFile) {
+      if (!trailer) {
+        navigate('/shipments/new')
+        return
+      }
+      navigate('/shipments/new', { state: { trailer } satisfies NewShipmentState })
+      return
+    }
+
+    const spec = trailer ?? { ...DEFAULT_TRAILER_TYPE.spec, units: 'metric' as const }
+    setContinuing(true)
+    try {
+      const items = await importBol(bolFile)
+      const shipmentId = newShipmentId()
+      const filename = await generateBolPdf(buildLoadPlanRequest(items, spec, spec.maxWeightKg), shipmentId, typeForSpec(spec).id)
+      const savedId = /^BOL-(.+)\.pdf$/i.exec(filename)?.[1] ?? shipmentId
+      navigate('/shipments/new', { state: { trailer: spec, items, shipmentId: savedId } satisfies NewShipmentState })
+    } catch (caught) {
+      setBolError(caught instanceof Error ? caught.message : 'Could not read the BOL.')
+    } finally {
+      setContinuing(false)
+    }
   }
 
   return (
@@ -60,7 +90,7 @@ export function HomePage() {
       <AppScreen title="Load planning">
         {isOffice ? (
           <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {KPIS.map((kpi) => (
+            {kpis.map((kpi) => (
               <div key={kpi.label} className="panel px-4 py-3">
                 <dt className="text-[13px] text-ink-faint">{kpi.label}</dt>
                 <dd className="mt-0.5 text-[22px] font-semibold tracking-tight tabular-nums">{kpi.value}</dd>
@@ -97,7 +127,7 @@ export function HomePage() {
               Upload the BOL. SmartCargo reads the cargo list from it. You can also enter the cargo by hand in the next
               step.
             </p>
-            <BolUpload />
+            <BolUpload onFileChange={setBolFile} />
           </div>
 
           <div className="panel-footer">
@@ -105,10 +135,15 @@ export function HomePage() {
               <p className="mr-auto text-[13px] text-danger" role="alert">
                 Correct the trailer dimensions in step 1.
               </p>
+            ) : bolError ? (
+              <p className="mr-auto text-[13px] text-danger" role="alert">
+                {bolError}
+              </p>
             ) : null}
-            <button type="button" className="btn btn-primary" onClick={continueToPlan}>
-              Continue to cargo plan
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <button type="button" className="btn btn-primary" onClick={() => void continueToPlan()} disabled={continuing} aria-busy={continuing}>
+              {continuing ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              {continuing ? 'Reading the BOL…' : 'Continue to cargo plan'}
+              {continuing ? null : <ArrowRight className="h-4 w-4" aria-hidden="true" />}
             </button>
           </div>
         </section>
@@ -125,7 +160,18 @@ export function HomePage() {
               View all
             </Link>
           </div>
-          <ShipmentTable rows={SHIPMENTS.slice(0, 5)} />
+          {error ? (
+            <p className="alert alert-danger m-4" role="alert">
+              {error}
+            </p>
+          ) : rows === null ? (
+            <p className="empty-state flex items-center justify-center gap-2">
+              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Loading shipments…
+            </p>
+          ) : (
+            <ShipmentTable rows={rows.slice(0, 5)} />
+          )}
         </section>
       </AppScreen>
     </>

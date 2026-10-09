@@ -1,4 +1,4 @@
-import type { ShipmentStatus } from '../../lib/shipments'
+type ShipmentStatus = 'Completed' | 'Loading' | 'Draft'
 
 const TONE: Record<ShipmentStatus, string> = {
   Completed: 'badge-ok',

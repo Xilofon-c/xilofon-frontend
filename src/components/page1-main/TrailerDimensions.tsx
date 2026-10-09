@@ -22,7 +22,7 @@ export function TrailerDimensionsForm({ form, compact = false, idPrefix = 'dim' 
   const limits = limitsFor(units)
 
   const fields = (
-    <div className={`grid gap-x-3 gap-y-1 ${compact ? 'grid-cols-3' : 'grid-cols-1 sm:grid-cols-3'}`}>
+    <div className={`grid gap-y-1 ${compact ? 'grid-cols-[repeat(3,minmax(4.85rem,1fr))] gap-x-2' : 'grid-cols-1 gap-x-3 sm:grid-cols-3'}`}>
       {FIELDS.map((field) => {
         const error = touched[field.key] ? errors[field.key] : undefined
         const limit = limits[field.key]
@@ -37,7 +37,7 @@ export function TrailerDimensionsForm({ form, compact = false, idPrefix = 'dim' 
             <div className="input-suffix">
               <input
                 id={inputId}
-                className={`field-input tabular-nums${compact ? ' min-h-9 text-[13px]' : ''}${error ? ' is-invalid' : ''}`}
+                className={`field-input tabular-nums${compact ? ' min-h-9 px-1.5 pr-[1.7rem] text-[13px]' : ''}${error ? ' is-invalid' : ''}`}
                 inputMode="decimal"
                 type="text"
                 name={field.key}
@@ -48,7 +48,7 @@ export function TrailerDimensionsForm({ form, compact = false, idPrefix = 'dim' 
                 aria-describedby={error ? errorId : undefined}
                 placeholder={`${limit.min}–${limit.max.toLocaleString()}`}
               />
-              <span className="suffix">{limit.unit}</span>
+              <span className={compact ? 'suffix right-1.5 text-[11px]' : 'suffix'}>{limit.unit}</span>
             </div>
             {compact ? null : (
               <p className="field-error" id={errorId} role={error ? 'alert' : undefined}>

@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Boxes, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, LoaderCircle } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, FileText, LoaderCircle } from 'lucide-react'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { CargoObjectList } from '../components/shipment/CargoObjectList'
 import { LoadViewport } from '../components/shipment/LoadViewport'
@@ -13,8 +13,9 @@ import {
   newShipmentId,
   packCargo,
 } from '../lib/cargo'
+import { generateBolPdf } from '../lib/bolApi'
 import { parseDimension } from '../lib/format'
-import { calculateLoad } from '../lib/packingApi'
+import { buildLoadPlanRequest, calculateLoad, isCanceledRequest } from '../lib/packingApi'
 import type { NewShipmentState } from '../lib/trailer'
 import { DEFAULT_TRAILER_TYPE, trailerTypeById, typeForSpec } from '../lib/trailerTypes'
 import type { CargoItem, CargoPlacement, TrailerSpec } from '../types'
@@ -23,10 +24,35 @@ const SIDE_BY_SIDE = '(min-width: 1024px)'
 const CARGO_DEFAULT = 400
 const SHIPMENT_DEFAULT = 340
 const CARGO_MIN = 320
-const SHIPMENT_MIN = 280
+const SHIPMENT_MIN = 312
 const CARGO_MAX = 680
 const SHIPMENT_MAX = 520
 const VIEW_MIN = 240
+const RECALC_MS = 300
+
+function packableCargo(items: CargoItem[]) {
+  return items.filter((item) => cargoHasDimensions(item) && (parseDimension(item.weight) ?? 0) > 0)
+}
+
+/** Changes when any value the packing service reads changes. Names are display-only. */
+function packingSignature(items: CargoItem[], trailer: TrailerSpec) {
+  return JSON.stringify({
+    length: trailer.length,
+    width: trailer.width,
+    height: trailer.height,
+    maxWeightKg: trailer.maxWeightKg,
+    boxes: items.map((item) => [
+      item.id,
+      item.length,
+      item.width,
+      item.height,
+      item.weight,
+      item.fragile,
+      item.tiltable,
+      item.stackable,
+    ]),
+  })
+}
 
 function clamp(value: number, min: number, max: number) {
   return Math.round(Math.min(max, Math.max(min, value)))
@@ -151,13 +177,13 @@ function PanelRail({
 
 export function CreateShipmentPage() {
   const location = useLocation()
-  const [shipmentId] = useState(newShipmentId)
+  const preset = (location.state as NewShipmentState | null) ?? null
+  const [shipmentId, setShipmentId] = useState(() => preset?.shipmentId ?? newShipmentId())
   const [trailer, setTrailer] = useState<TrailerSpec>(
-    () =>
-      (location.state as NewShipmentState | null)?.trailer ?? { ...DEFAULT_TRAILER_TYPE.spec, units: 'metric' },
+    () => preset?.trailer ?? { ...DEFAULT_TRAILER_TYPE.spec, units: 'metric' },
   )
   const [trailerTypeId, setTrailerTypeId] = useState(() => typeForSpec(trailer).id)
-  const [items, setItems] = useState<CargoItem[]>(() => [
+  const [items, setItems] = useState<CargoItem[]>(() => preset?.items?.length ? preset.items : [
     createCargoItem({
       name: 'Pump crate',
       length: '120',
@@ -185,11 +211,15 @@ export function CreateShipmentPage() {
   ])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [listFocus, setListFocus] = useState(0)
-  const [generating, setGenerating] = useState(false)
-  const [generateError, setGenerateError] = useState<string | null>(null)
+  const [calculating, setCalculating] = useState(false)
+  const [generatingBol, setGeneratingBol] = useState(false)
+  const [planError, setPlanError] = useState<string | null>(null)
+  const [bolError, setBolError] = useState<string | null>(null)
   const [placements, setPlacements] = useState<Map<string, CargoPlacement> | null>(null)
-  const layoutRevision = useRef(0)
   const frameRef = useRef<HTMLDivElement>(null)
+  const packingInputs = useRef({ items, trailer })
+  packingInputs.current = { items, trailer }
+  const packingKey = useMemo(() => packingSignature(items, trailer), [items, trailer])
   const sideBySide = useMediaQuery(SIDE_BY_SIDE)
   const [cargoWidth, setCargoWidth] = useState(CARGO_DEFAULT)
   const [shipmentWidth, setShipmentWidth] = useState(SHIPMENT_DEFAULT)
@@ -211,34 +241,63 @@ export function CreateShipmentPage() {
   )
   const stats = useMemo(() => cargoStats(items, packed, trailer), [items, packed, trailer])
 
-  function invalidateLayout() {
-    layoutRevision.current += 1
-    setPlacements(null)
-  }
+  useEffect(() => {
+    const { items: currentItems, trailer: currentTrailer } = packingInputs.current
+    const ready = packableCargo(currentItems)
+    if (ready.length === 0) {
+      setPlacements(null)
+      setCalculating(false)
+      setPlanError(null)
+      return
+    }
+
+    const controller = new AbortController()
+    let active = true
+    setCalculating(true)
+    setPlanError(null)
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const next = await calculateLoad(ready, currentTrailer, currentTrailer.maxWeightKg, controller.signal)
+          if (active) setPlacements(next)
+        } catch (error) {
+          if (!active || isCanceledRequest(error)) return
+          setPlanError(error instanceof Error ? error.message : 'Could not calculate the load.')
+        } finally {
+          if (active) setCalculating(false)
+        }
+      })()
+    }, RECALC_MS)
+
+    return () => {
+      active = false
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [packingKey])
 
   function changeTrailer(next: TrailerSpec) {
     setTrailer(next)
-    setGenerateError(null)
-    invalidateLayout()
+    setBolError(null)
   }
 
   function addItem() {
-    const next = createCargoItem({ name: `Box ${items.length + 1}` })
+    const next = createCargoItem({ name: `Box ${items.length + 1}`, stackable: true, tiltable: true })
     setItems((current) => [...current, next])
     setSelectedId(next.id)
-    setGenerateError(null)
-    invalidateLayout()
+    setBolError(null)
   }
 
   function updateItem(id: string, patch: Partial<CargoItem>) {
     setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)))
-    if (Object.keys(patch).some((key) => key !== 'name')) invalidateLayout()
+    if (Object.keys(patch).some((key) => key !== 'name')) setBolError(null)
   }
 
   function removeItem(id: string) {
     setItems((current) => current.filter((item) => item.id !== id))
     setSelectedId((current) => (current === id ? null : current))
-    invalidateLayout()
+    setBolError(null)
   }
 
   function moveItem(from: number, to: number) {
@@ -251,8 +310,7 @@ export function CreateShipmentPage() {
       next.splice(to, 0, moved)
       return next
     })
-    setGenerateError(null)
-    invalidateLayout()
+    setBolError(null)
   }
 
   function selectFromScene(id: string | null) {
@@ -262,30 +320,42 @@ export function CreateShipmentPage() {
     setListFocus((tick) => tick + 1)
   }
 
-  async function onGenerate() {
+  async function onGenerateBol() {
     const ready = items.filter(cargoHasDimensions)
     if (ready.length === 0) {
-      setGenerateError('Add at least one object with length, width, and height.')
+      setBolError('Add at least one object with length, width, and height.')
       return
     }
     const weightless = ready.filter((item) => (parseDimension(item.weight) ?? 0) <= 0)
     if (weightless.length > 0) {
-      setGenerateError(`Add a weight to: ${weightless.map((item) => item.name.trim() || 'Cargo').join(', ')}.`)
+      setBolError(`Add a weight to: ${weightless.map((item) => item.name.trim() || 'Cargo').join(', ')}.`)
       return
     }
 
-    const revision = layoutRevision.current
-    setGenerating(true)
-    setGenerateError(null)
+    setGeneratingBol(true)
+    setBolError(null)
     try {
-      const next = await calculateLoad(ready, trailer, trailer.maxWeightKg)
-      if (layoutRevision.current === revision) setPlacements(next)
+      const filename = await generateBolPdf(
+        buildLoadPlanRequest(ready, trailer, trailer.maxWeightKg),
+        shipmentId,
+        trailerTypeById(trailerTypeId).id,
+      )
+      const savedId = /^BOL-(.+)\.pdf$/i.exec(filename)?.[1]
+      if (savedId) setShipmentId(savedId)
     } catch (error) {
-      setGenerateError(error instanceof Error ? error.message : 'Could not calculate the load.')
+      setBolError(error instanceof Error ? error.message : 'Could not generate the BOL.')
     } finally {
-      setGenerating(false)
+      setGeneratingBol(false)
     }
   }
+
+  const planStatus = calculating
+    ? placements
+      ? 'Updating the load plan…'
+      : 'Calculating the load plan…'
+    : placements
+      ? 'The load plan updates when cargo or the trailer changes.'
+      : 'Showing a draft layout. Add dimensions and weight to calculate it.'
 
   const collapseCargo = (
     <button
@@ -325,35 +395,33 @@ export function CreateShipmentPage() {
           onImported={(imported) => {
             setItems((current) => [...current, ...imported])
             setSelectedId(imported.at(-1)?.id ?? null)
-            setGenerateError(null)
-            invalidateLayout()
+            setBolError(null)
           }}
         />
       </div>
       <div className="grid shrink-0 gap-2 border-t border-line bg-canvas px-4 py-3">
-        {generateError ? (
+        {bolError ?? planError ? (
           <p className="alert alert-danger" role="alert">
-            {generateError}
+            {bolError ?? planError}
           </p>
         ) : null}
         <button
           type="button"
           className="btn btn-primary w-full"
-          onClick={() => void onGenerate()}
-          disabled={generating || items.length === 0}
-          aria-busy={generating}
+          onClick={() => void onGenerateBol()}
+          disabled={generatingBol || items.length === 0}
+          aria-busy={generatingBol}
         >
-          {generating ? (
+          {generatingBol ? (
             <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Boxes className="h-4 w-4" aria-hidden="true" />
+            <FileText className="h-4 w-4" aria-hidden="true" />
           )}
-          {generating ? 'Calculating…' : placements ? 'Recalculate load plan' : 'Generate load plan'}
+          {generatingBol ? 'Generating…' : 'Generate BOL'}
         </button>
-        <p className="text-center text-[12px] text-ink-faint">
-          {placements
-            ? 'Showing the optimised plan. Edits reset it to the draft layout.'
-            : 'Showing a draft layout. Generate to optimise it.'}
+        <p className="flex items-center justify-center gap-1.5 text-center text-[12px] text-ink-faint" aria-live="polite">
+          {calculating ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : null}
+          {planStatus}
         </p>
       </div>
     </aside>
