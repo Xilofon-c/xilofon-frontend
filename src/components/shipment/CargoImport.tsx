@@ -1,7 +1,6 @@
 import { useId, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { Upload } from 'lucide-react'
-import { extractCargoFromDocument } from '../../lib/bolApi'
-import { parseCargoFile } from '../../lib/parseCargoFile'
+import { importBol } from '../../lib/bolApi'
 import type { CargoItem } from '../../types'
 
 const ACCEPT =
@@ -43,14 +42,7 @@ function isAllowed(file: File) {
 }
 
 async function readFile(file: File): Promise<CargoItem[]> {
-  try {
-    return await parseCargoFile(file)
-  } catch (error) {
-    const ext = extensionOf(file.name)
-    const localOnly = ext === 'csv' || ext === 'txt' || ext === 'tsv'
-    if (localOnly) throw error
-    return extractCargoFromDocument(file)
-  }
+  return importBol(file)
 }
 
 export function CargoImport({ onImported, children }: CargoImportProps) {
