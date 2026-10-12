@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { LogOut, Plus, ScanBarcode } from 'lucide-react'
-import { initialsOf, isSignedIn, readSession, ROLE_LABEL } from '../../lib/session'
+import { initialsOf, isSignedIn, readSession, ROLE_LABEL, readRole } from '../../lib/session'
 import { isExactRoute, NAV_LINKS } from './navConfig'
 
 type DesktopNavbarProps = {
@@ -10,6 +10,7 @@ type DesktopNavbarProps = {
 export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
   const signedIn = isSignedIn()
   const session = readSession()
+  const currentRole= readRole()
 
   return (
     <header className="sticky top-0 z-50 h-[var(--header-h)] border-b border-line bg-canvas">
@@ -42,10 +43,12 @@ export function DesktopNavbar({ onOpenScanner }: DesktopNavbarProps) {
             <ScanBarcode className="h-4 w-4" aria-hidden="true" />
             Scan BOL
           </button>
-          <Link to="/shipments/new" className="btn btn-primary btn-sm">
+          { currentRole==='office' ?
+          (<Link to="/shipments/new" className="btn btn-primary btn-sm">
             <Plus className="h-4 w-4" aria-hidden="true" />
             New shipment
-          </Link>
+          </Link>) :
+          (<div></div>)}
 
           <div className="mx-2 h-6 w-px bg-line" aria-hidden="true" />
 
