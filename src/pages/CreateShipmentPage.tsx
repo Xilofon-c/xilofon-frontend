@@ -13,9 +13,9 @@ import {
   newShipmentId,
   packCargo,
 } from '../lib/cargo'
-import { generateBolPdf } from '../lib/bolApi'
+import { buildBolRequest, generateBolPdf } from '../lib/bolApi'
 import { parseDimension } from '../lib/format'
-import { buildLoadPlanRequest, calculateLoad, isCanceledRequest } from '../lib/packingApi'
+import { calculateLoad, isCanceledRequest } from '../lib/packingApi'
 import type { NewShipmentState } from '../lib/trailer'
 import { DEFAULT_TRAILER_TYPE, trailerTypeById, typeForSpec } from '../lib/trailerTypes'
 import type { CargoItem, CargoPlacement, TrailerSpec } from '../types'
@@ -335,11 +335,7 @@ export function CreateShipmentPage() {
     setGeneratingBol(true)
     setBolError(null)
     try {
-      const filename = await generateBolPdf(
-        buildLoadPlanRequest(ready, trailer, trailer.maxWeightKg),
-        shipmentId,
-        trailerTypeById(trailerTypeId).id,
-      )
+      const filename = await generateBolPdf(buildBolRequest(ready, trailer, shipmentId, placements), shipmentId)
       const savedId = /^BOL-(.+)\.pdf$/i.exec(filename)?.[1]
       if (savedId) setShipmentId(savedId)
     } catch (error) {

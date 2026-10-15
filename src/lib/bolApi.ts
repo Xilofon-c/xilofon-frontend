@@ -1,8 +1,8 @@
 import { isAxiosError } from 'axios'
-import { createCargoItem } from './cargo'
+import { colorFor, createCargoItem } from './cargo'
 import { api, apiError } from './apiClient'
-import type { LoadPlanRequest } from './packingApi'
-import type { CargoItem } from '../types'
+import { parseDimension } from './format'
+import type { CargoItem, CargoPlacement, TrailerInterior } from '../types'
 
 type BolResponse = {
   truck: {
@@ -81,12 +81,80 @@ async function bolErrorMessage(error: unknown) {
   }
 }
 
-/** Posts the calculate-load body plus the selected trailer type, and downloads the PDF. */
-export async function generateBolPdf(payload: LoadPlanRequest, shipmentId: string, trailerType: string) {
+type BolRequest = {
+  shipmentId: string
+  trailer: { lengthM: number; widthM: number; heightM: number }
+  items: Array<{
+    id: string
+    name: string
+    lengthCm: number
+    widthCm: number
+    heightCm: number
+    weightKg: number
+    fragile: boolean
+    tiltable: boolean
+    stackable: boolean
+  }>
+  /** Optional: the layout shown on screen (cm). Without it the server runs the packing engine itself. */
+  layout?: Array<{
+    id: string
+    xCm: number
+    yCm: number
+    zCm: number
+    lengthCm: number
+    widthCm: number
+    heightCm: number
+    color: string
+  }>
+}
+
+export function buildBolRequest(
+  items: CargoItem[],
+  trailer: TrailerInterior,
+  shipmentId: string,
+  placements: Map<string, CargoPlacement> | null = null,
+): BolRequest {
+  const request: BolRequest = {
+    shipmentId,
+    trailer: { lengthM: trailer.length, widthM: trailer.width, heightM: trailer.height },
+    items: items.map((item) => ({
+      id: item.id,
+      name: item.name.trim() || 'Cargo',
+      lengthCm: parseDimension(item.length) ?? 0,
+      widthCm: parseDimension(item.width) ?? 0,
+      heightCm: parseDimension(item.height) ?? 0,
+      weightKg: parseDimension(item.weight) ?? 0,
+      fragile: item.fragile,
+      tiltable: item.tiltable,
+      stackable: item.stackable,
+    })),
+  }
+  if (placements) {
+    // Placements are in metres; the server wants centimetres.
+    request.layout = items.flatMap((item) => {
+      const p = placements.get(item.id)
+      if (!p) return [] // did not fit -> server lists it under "Not loaded"
+      return [{
+        id: item.id,
+        xCm: p.x * 100,
+        yCm: p.y * 100,
+        zCm: p.z * 100,
+        lengthCm: p.length * 100,
+        widthCm: p.width * 100,
+        heightCm: p.height * 100,
+        color: colorFor(item),
+      }]
+    })
+  }
+  return request
+}
+
+/** Sends the shipment to the export service and downloads the BOL PDF. */
+export async function generateBolPdf(request: BolRequest, shipmentId: string) {
   let response
   try {
     // The export service is mounted at /export; its router path is /shipments/bol.
-    response = await api.post<Blob>('/export/shipments/bol', { ...payload, trailer: trailerType }, {
+    response = await api.post<Blob>('/export/shipments/bol', request, {
       responseType: 'blob',
       headers: { Accept: 'application/pdf' },
     })
