@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Navbar } from './components/navbar/Navbar'
 import { AccountPage } from './pages/AccountPage'
 import { CreateShipmentPage } from './pages/CreateShipmentPage'
@@ -13,6 +13,7 @@ import LogOut from './components/loginpage/LogOut'
 import ResetPassword from './components/loginpage/ResetPassword'
 import { Footer } from './components/page1-main/Footer'
 import OfficeRoute from './routes/OfficeRoute'
+import RequireAuth from './routes/RequireAuth'
 
 function AppShell() {
   const { pathname } = useLocation()
@@ -45,23 +46,30 @@ function AuthShell() {
 export default function App() {
   return (
     <Routes>
-          <Route element={<AuthShell />}>
+      <Route element={<AuthShell />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/input-pin" element={<GetPIN />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-       </Route> 
-      <Route element={<AppShell />}>
-        <Route path="/" element={
-          <OfficeRoute>
-          <HomePage />
-          </OfficeRoute>} />
-        <Route path="/shipments" element={<ShipmentsPage />} />
-        <Route path="/shipments/new" element={<CreateShipmentPage />} />
-        <Route path="/shipments/:shipmentId" element={<ShipmentDetailPage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/logout" element={<LogOut />} />
+      </Route>
+      <Route element={<RequireAuth />}>
+        <Route element={<AppShell />}>
+          <Route
+            path="/"
+            element={
+              <OfficeRoute>
+                <HomePage />
+              </OfficeRoute>
+            }
+          />
+          <Route path="/shipments" element={<ShipmentsPage />} />
+          <Route path="/shipments/new" element={<CreateShipmentPage />} />
+          <Route path="/shipments/:shipmentId" element={<ShipmentDetailPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/logout" element={<LogOut />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Route>
     </Routes>
   )
