@@ -7,7 +7,7 @@ type OfficeRouteProps = {
 }
 
 export default function OfficeRoute({ children }: OfficeRouteProps) {
-  // Guests can open the planner. A signed-in loader is sent to their account.
+  // A signed-in loader is sent to their account. Office users see the planner.
   if (isSignedIn() && readRole() !== 'office') {
     return <Navigate to="/account" replace />
   }
