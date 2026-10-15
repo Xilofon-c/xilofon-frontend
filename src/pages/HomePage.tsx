@@ -6,13 +6,13 @@ import { BolUpload } from '../components/page1-main/BolUpload'
 import { TrailerDimensionsForm } from '../components/page1-main/TrailerDimensions'
 import { ShipmentTable } from '../components/shipment/ShipmentTable'
 import { useTrailerForm } from '../hooks/useTrailerForm'
-import { generateBolPdf, importBol } from '../lib/bolApi'
+import { buildBolRequest, generateBolPdf, importBol } from '../lib/bolApi'
 import { newShipmentId } from '../lib/cargo'
 import { buildLoadPlanRequest } from '../lib/packingApi'
 import { readRole } from '../lib/session'
 import { useShipmentList } from '../hooks/useShipmentList'
 import type { NewShipmentState } from '../lib/trailer'
-import { DEFAULT_TRAILER_TYPE, typeForSpec } from '../lib/trailerTypes'
+import { DEFAULT_TRAILER_TYPE } from '../lib/trailerTypes'
 import { AppScreen } from './AppScreen'
 
 
@@ -65,7 +65,7 @@ export function HomePage() {
     try {
       const items = await importBol(bolFile)
       const shipmentId = newShipmentId()
-      const filename = await generateBolPdf(buildLoadPlanRequest(items, spec, spec.maxWeightKg), shipmentId, typeForSpec(spec).id)
+      const filename = await generateBolPdf(buildBolRequest(items, spec, shipmentId), shipmentId)
       const savedId = /^BOL-(.+)\.pdf$/i.exec(filename)?.[1] ?? shipmentId
       navigate('/shipments/new', { state: { trailer: spec, items, shipmentId: savedId } satisfies NewShipmentState })
     } catch (caught) {
