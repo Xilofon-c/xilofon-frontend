@@ -36,12 +36,49 @@ export function readRole(): UserRole | null {
   }
 }
 
-export function isSignedIn() {
+type JwtPayload = { exp?: unknown }
+
+function tokenExpiry(token: string) {
+  const segment = token.split('.')[1]
+  if (!segment) return null
   try {
-    return Boolean(localStorage.getItem(TOKEN))
+    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const payload = JSON.parse(atob(padded)) as JwtPayload
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null
   } catch {
-    return false
+    return null
   }
+}
+
+function storedToken() {
+  try {
+    const token = localStorage.getItem(TOKEN)
+    if (!token) return null
+    const expiry = tokenExpiry(token)
+    // A token with no readable expiry cannot be trusted; treat it as already finished.
+    const remainingMs = expiry === null ? 0 : expiry - Date.now()
+    return { token, remainingMs }
+  } catch {
+    return null
+  }
+}
+
+/** Time left on the stored token. Null when nothing is stored. Zero when it cannot be read or is past `exp`. */
+export function sessionRemainingMs() {
+  const stored = storedToken()
+  return stored ? stored.remainingMs : null
+}
+
+/** Bearer token for API calls. Null when it is missing or no longer valid. */
+export function readAuthToken() {
+  const stored = storedToken()
+  if (!stored || stored.remainingMs <= 0) return null
+  return stored.token
+}
+
+export function isSignedIn() {
+  return readAuthToken() !== null
 }
 
 /** Keeps the current token unless the login response gives a new one. */
